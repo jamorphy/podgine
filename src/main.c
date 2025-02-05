@@ -2,8 +2,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "linmath.h"
+#include "utils.h"
+#include "utils_math.h"
 
 #define SOKOL_METAL
 #include "sokol_app.h"
@@ -11,15 +14,6 @@
 #include "sokol_glue.h"
 #include "sokol_log.h"
 
-#define TO_RAD(deg) ((deg) * M_PI / 180.0f)
-
-float clamp(float val, float min, float max) {
-    if (val < min) return min;
-    if (val > max) return max;
-    return val;
-}
-
-// State struct
 static struct {
     float rx, ry;
     sg_pipeline pip;
@@ -37,75 +31,13 @@ static struct {
 } state;
 
 typedef struct {
-    vec3 origin;
-    vec3 direction;
-} Ray;
-
-typedef struct {
     mat4x4 mvp;
 } vs_params_t;
 
-// Add these utility functions:
-float my_sqrt(float x) {
-    if (x <= 0) return 0;
-    
-    float result = x;
-    for (int i = 0; i < 10; i++) {  // 10 iterations for reasonable accuracy
-        result = (result + x / result) * 0.5f;
-    }
-    return result;
-}
-
-float my_sin(float x) {
-    // Normalize angle to -2PI to 2PI range
-    x = x - ((int)(x / (2 * 3.14159f))) * 2 * 3.14159f;
-    
-    // Using Taylor series approximation
-    float result = x;
-    float term = x;
-    float x2 = x * x;
-    
-    for (int i = 1; i <= 5; i++) {  // 5 terms for reasonable accuracy
-        term = -term * x2 / ((2 * i + 1) * (2 * i));
-        result += term;
-    }
-    return result;
-}
-
-float my_cos(float x) {
-    return my_sin(x + 3.14159f/2);  // cos(x) = sin(x + π/2)
-}
-
-char* read_shader_file(const char* filepath) {
-    printf("Attempting to load shader: %s\n", filepath);
-    FILE* file = fopen(filepath, "r");
-    if (!file) {
-        printf("Failed to open shader file: %s\n", filepath);
-        return NULL;
-    }
-
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char* buffer = (char*)malloc(size + 1);
-    if (!buffer) {
-        fclose(file);
-        printf("Failed to allocate memory for shader\n");
-        return NULL;
-    }
-
-    fread(buffer, 1, size, file);
-    buffer[size] = '\0';
-    
-    fclose(file);
-    return buffer;
-}
-
 void create_grid(void) {
     // Let's make a 20x20 grid, centered at origin (-10 to +10)
-    const int GRID_SIZE = 10;  // This means -10 to +10, giving us 21 lines in each direction
-    const float GRID_SPACE = 1.0f;
+    const int GRID_SIZE = 20;  // This means -10 to +10, giving us 21 lines in each direction
+    const float GRID_SPACE = 2.0f;
     const int LINES_PER_DIR = (GRID_SIZE * 2 + 1);
     const int VERTS_PER_LINE = 2;
     const int TOTAL_LINES = LINES_PER_DIR * 2;  // Lines in both X and Z directions
@@ -281,11 +213,9 @@ void init(void) {
         },
         .vertex_func = {
             .source = cube_vs,
-            //.entry = "cube_vs"
         },
         .fragment_func = {
             .source = cube_fs,
-            //.entry = "cube_fs"
         }
     });
 
@@ -350,12 +280,12 @@ void input(const sapp_event* ev) {
             if (state.mouse_down) {
                 float delta_x = ev->mouse_x - state.last_mouse_x;
                 float delta_y = ev->mouse_y - state.last_mouse_y;
-                
+
                 state.camera_yaw += -delta_x * 0.3f;
-                state.camera_pitch += delta_y * 0.3f;
+                state.camera_pitch += delta_y * 0.3f;                
                 
                 state.camera_pitch = clamp(state.camera_pitch, -89.0f, 89.0f);
-                
+
                 state.last_mouse_x = ev->mouse_x;
                 state.last_mouse_y = ev->mouse_y;
             }
@@ -370,18 +300,21 @@ void frame(void) {
     const float w = sapp_widthf();
     const float h = sapp_heightf();
 
+    float normalized_yaw = fmodf(state.camera_yaw, 360.0f);
+    if (normalized_yaw < 0) normalized_yaw += 360.0f;
+
     // Convert orbit angles to camera position
     float pitch_rad = TO_RAD(state.camera_pitch);
-    float yaw_rad = TO_RAD(state.camera_yaw);
+    float yaw_rad = TO_RAD(normalized_yaw);
 
     // Calculate camera position using spherical coordinates
-    float cam_x = state.camera_distance * my_cos(pitch_rad) * my_sin(yaw_rad);
-    float cam_y = state.camera_distance * my_sin(pitch_rad);
-    float cam_z = state.camera_distance * my_cos(pitch_rad) * my_cos(yaw_rad);
+    float cam_x = state.camera_distance * cosf(pitch_rad) * sinf(yaw_rad);
+    float cam_y = state.camera_distance * sinf(pitch_rad);
+    float cam_z = state.camera_distance * cosf(pitch_rad) * cosf(yaw_rad);
 
     mat4x4 proj;
     mat4x4 view;
-    mat4x4_perspective(proj, TO_RAD(60.0f), w/h, 0.1f, 100.0f);
+    mat4x4_perspective(proj, TO_RAD(60.0f), w/h, 0.1f, 500.0f);
     
     vec3 eye = {cam_x, cam_y, cam_z};
     vec3 center = {0.0f, 0.0f, 0.0f};
@@ -437,16 +370,18 @@ void cleanup(void) {
 }
 
 sapp_desc sokol_main(int argc, char* argv[]) {
+    int WINDOW_WIDTH = 1280, WINDOW_HEIGHT = 960;
     (void)argc; (void)argv;
     return (sapp_desc){
         .init_cb = init,
         .frame_cb = frame,
         .cleanup_cb = cleanup,
         .event_cb = input,
-        .width = 800,
-        .height = 600,
+        .width = WINDOW_WIDTH,
+        .height = WINDOW_HEIGHT,
         .sample_count = 4,
         .window_title = "Cube",
-        .icon.sokol_default = true,
+        .icon.sokol_default = false,
+        .swap_interval = 1
     };
 }
