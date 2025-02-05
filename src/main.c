@@ -14,25 +14,232 @@
 #include "sokol_glue.h"
 #include "sokol_log.h"
 
-static struct {
-    float rx, ry;
-    sg_pipeline pip;
-    sg_bindings bind;
-    sg_pipeline grid_pip;
-    sg_bindings grid_bind;
-    float camera_distance;
-    float camera_pitch;
-    float camera_yaw;
-    bool mouse_down;
-    float last_mouse_x;
-    float last_mouse_y;
-    bool cube_selected;
-    bool dragging;
-} state;
+#include "state.h"
+#include "gui.h"
+
+#include "sokol_nuklear.h"
+
+static struct state state;
 
 typedef struct {
     mat4x4 mvp;
 } vs_params_t;
+
+void create_gizmo(void) {
+    const float axis_length = 5.0f;
+    const float radius = 0.05f;
+    const int segments = 8;
+    float vertices[144 * 6];  // (segments * 6 vertices * 3 axes) * 6 floats per vertex
+    int vertex_count = 0;
+
+    // X axis (red) cylinder
+    for(int i = 0; i < segments; i++) {
+        float angle1 = (float)i * 2.0f * PI / segments;
+        float angle2 = (float)(i + 1) * 2.0f * PI / segments;
+        
+        float y1 = cosf(angle1) * radius;
+        float z1 = sinf(angle1) * radius;
+        float y2 = cosf(angle2) * radius;
+        float z2 = sinf(angle2) * radius;
+
+        // First triangle
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = y1;
+        vertices[vertex_count++] = z1;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        vertices[vertex_count++] = axis_length;
+        vertices[vertex_count++] = y1;
+        vertices[vertex_count++] = z1;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = y2;
+        vertices[vertex_count++] = z2;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        // Second triangle
+        vertices[vertex_count++] = axis_length;
+        vertices[vertex_count++] = y1;
+        vertices[vertex_count++] = z1;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        vertices[vertex_count++] = axis_length;
+        vertices[vertex_count++] = y2;
+        vertices[vertex_count++] = z2;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = y2;
+        vertices[vertex_count++] = z2;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+    }
+
+    // Y axis (green) cylinder
+    for(int i = 0; i < segments; i++) {
+        float angle1 = (float)i * 2.0f * PI / segments;
+        float angle2 = (float)(i + 1) * 2.0f * PI / segments;
+        
+        float x1 = cosf(angle1) * radius;
+        float z1 = sinf(angle1) * radius;
+        float x2 = cosf(angle2) * radius;
+        float z2 = sinf(angle2) * radius;
+
+        // First triangle
+        vertices[vertex_count++] = x1;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = z1;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        vertices[vertex_count++] = x1;
+        vertices[vertex_count++] = axis_length;
+        vertices[vertex_count++] = z1;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        vertices[vertex_count++] = x2;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = z2;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        // Second triangle
+        vertices[vertex_count++] = x1;
+        vertices[vertex_count++] = axis_length;
+        vertices[vertex_count++] = z1;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        vertices[vertex_count++] = x2;
+        vertices[vertex_count++] = axis_length;
+        vertices[vertex_count++] = z2;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+
+        vertices[vertex_count++] = x2;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = z2;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+        vertices[vertex_count++] = 0.0f;
+    }
+
+    // Z axis (blue) cylinder
+    for(int i = 0; i < segments; i++) {
+        float angle1 = (float)i * 2.0f * PI / segments;
+        float angle2 = (float)(i + 1) * 2.0f * PI / segments;
+        
+        float x1 = cosf(angle1) * radius;
+        float y1 = sinf(angle1) * radius;
+        float x2 = cosf(angle2) * radius;
+        float y2 = sinf(angle2) * radius;
+
+        // First triangle
+        vertices[vertex_count++] = x1;
+        vertices[vertex_count++] = y1;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+
+        vertices[vertex_count++] = x1;
+        vertices[vertex_count++] = y1;
+        vertices[vertex_count++] = axis_length;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+
+        vertices[vertex_count++] = x2;
+        vertices[vertex_count++] = y2;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+
+        // Second triangle
+        vertices[vertex_count++] = x1;
+        vertices[vertex_count++] = y1;
+        vertices[vertex_count++] = axis_length;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+
+        vertices[vertex_count++] = x2;
+        vertices[vertex_count++] = y2;
+        vertices[vertex_count++] = axis_length;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+
+        vertices[vertex_count++] = x2;
+        vertices[vertex_count++] = y2;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 0.0f;
+        vertices[vertex_count++] = 1.0f;
+    }
+
+    state.gizmo_bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){
+        .data = (sg_range){vertices, vertex_count * sizeof(float)},
+        .label = "gizmo-vertices"
+    });
+
+    char* vs = read_shader_file("src/shaders/grid_vs.metal");
+    char* fs = read_shader_file("src/shaders/grid_fs.metal");
+
+    sg_shader shd = sg_make_shader(&(sg_shader_desc){
+        .uniform_blocks[0] = {
+            .stage = SG_SHADERSTAGE_VERTEX,
+            .size = sizeof(vs_params_t),
+            .msl_buffer_n = 0,
+        },
+        .vertex_func = {
+            .source = vs,
+        },
+        .fragment_func = {
+            .source = fs,
+        }
+    });
+
+    state.gizmo_pip = sg_make_pipeline(&(sg_pipeline_desc){
+        .layout = {
+            .buffers[0].stride = 6 * sizeof(float),  // pos + color
+            .attrs = {
+                [0] = { .format = SG_VERTEXFORMAT_FLOAT3 },  // position
+                [1] = { .format = SG_VERTEXFORMAT_FLOAT3 }   // color
+            }
+        },
+        .shader = shd,
+        .primitive_type = SG_PRIMITIVETYPE_TRIANGLES,
+        .depth = {
+            .write_enabled = true,
+            .compare = SG_COMPAREFUNC_LESS_EQUAL,
+        },
+        .label = "gizmo-pipeline"
+    });
+
+    free(vs);
+    free(fs);
+}
+
 
 void create_grid(void) {
     // Let's make a 20x20 grid, centered at origin (-10 to +10)
@@ -146,6 +353,12 @@ void init(void) {
         .logger.func = slog_func,
     });
 
+    snk_setup(&(snk_desc_t){
+        .enable_set_mouse_cursor = false,
+    });
+
+    nk_style_hide_cursor(snk_new_frame());
+
     /* cube vertex buffer */
     float vertices[] = {
         -1.0, -1.0, -1.0,   1.0, 0.0, 0.0, 1.0,
@@ -250,14 +463,20 @@ void init(void) {
     };
 
     create_grid();
+    state.cube_position[0] = 0.0f;
+    state.cube_position[1] = 0.5f;
+    state.cube_position[2] = 0.0f;
+    create_gizmo();
 
     free(cube_vs);
     free(cube_fs);
 }
 
+
 void input(const sapp_event* ev) {
     switch (ev->type) {
         case SAPP_EVENTTYPE_MOUSE_DOWN: {
+
             if (ev->mouse_button == SAPP_MOUSEBUTTON_LEFT) {
                 state.mouse_down = true;
                 state.last_mouse_x = ev->mouse_x;
@@ -297,6 +516,9 @@ void input(const sapp_event* ev) {
 
 
 void frame(void) {
+
+    state.nk_ctx = snk_new_frame();
+    
     const float w = sapp_widthf();
     const float h = sapp_heightf();
 
@@ -360,12 +582,34 @@ void frame(void) {
     sg_apply_uniforms(0, &SG_RANGE(vs_params));
     sg_draw(0, (20 * 2 + 1) * 4, 1);
 
+    // gizmo
+    mat4x4 gizmo_model;
+    mat4x4_identity(gizmo_model);;
+    mat4x4_translate(gizmo_model, 
+        state.cube_position[0], 
+        state.cube_position[1], 
+        state.cube_position[2]);
+    
+    mat4x4_mul(mvp, proj, view);
+    mat4x4_mul(mvp, mvp, gizmo_model);
+    memcpy(&vs_params.mvp, mvp, sizeof(mat4x4));
+
+    sg_apply_pipeline(state.gizmo_pip);
+    sg_apply_bindings(&state.gizmo_bind);
+    sg_apply_uniforms(0, &SG_RANGE(vs_params));
+    sg_draw(0, 144, 1);  // 3 axes * 2 vertices each = 6 vertices
+
+    snk_new_frame();
+    draw_nuklear_gui(&state);
+    snk_render(sapp_width(), sapp_height()); 
+
     sg_end_pass();
     sg_commit();
 }
 
 
 void cleanup(void) {
+    snk_shutdown();
     sg_shutdown();
 }
 
