@@ -4,6 +4,22 @@
 #include "../libs/sokol/linmath.h"
 #include <stdint.h>
 
+typedef struct {
+    mat4x4 mvp;
+} vs_params_t;
+
+typedef enum {
+    PIPELINE_STANDARD,
+    PIPELINE_GRID,
+    PIPELINE_COUNT
+} PipelineType;
+
+
+typedef struct {
+    PipelineType type;
+    sg_pipeline pipeline;
+} RenderHandle;
+
 // Components
 typedef struct {
     float position[3];
@@ -15,6 +31,7 @@ typedef struct {
     sg_buffer vertex_buffer;
     sg_buffer index_buffer;
     int vertex_count;
+    int index_count;
 } Mesh;
 
 typedef struct {
@@ -36,6 +53,7 @@ typedef struct {
     // component pools
     Transform* transform;
     Mesh* mesh;
+    RenderHandle* render;
 } Entity;
 
 typedef struct {
@@ -47,6 +65,8 @@ typedef struct {
     Transform transforms[1000];
     Mesh meshes[1000];
     Camera camera;
+    RenderHandle renders[1000];
+    sg_pipeline pipelines[1000];
 } World;
 
 Entity* create_entity(World* world);
@@ -57,3 +77,6 @@ Entity* create_cube_entity(World* world, float x, float y, float z);
 Entity* create_grid_entity(World* world);
 void input_system(World* world);
 void update_camera_system(World* world);
+void render(World* world, mat4x4 view, mat4x4 proj);
+Entity* create_cube(World* world, float x, float y, float z);
+Entity* create_grid(World* world);

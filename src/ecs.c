@@ -3,6 +3,55 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+void render(World* world, mat4x4 view, mat4x4 proj) {
+    for (PipelineType type = 0; type < PIPELINE_COUNT; type++) {
+        bool pipeline_bound = false;
+        
+        for (uint32_t i = 0; i < world->entity_count; i++) {
+            Entity* entity = &world->entities[i];
+            
+            if (entity->render && entity->render->type == type) {
+                if (!pipeline_bound) {
+                    sg_apply_pipeline(world->pipelines[type]);
+                    pipeline_bound = true;
+                }
+                
+                mat4x4 model;
+                mat4x4_identity(model);
+                mat4x4_translate(model, 
+                    entity->transform->position[0],
+                    entity->transform->position[1],
+                    entity->transform->position[2]
+                );
+                
+                mat4x4 mvp;
+                mat4x4_mul(mvp, proj, view);
+                mat4x4_mul(mvp, mvp, model);
+                
+                vs_params_t vs_params;
+                memcpy(&vs_params.mvp, mvp, sizeof(mat4x4));
+                
+                if (type == PIPELINE_STANDARD) {
+                    // Cube uses indexed rendering
+                    sg_apply_bindings(&(sg_bindings){
+                        .vertex_buffers[0] = entity->mesh->vertex_buffer,
+                        .index_buffer = entity->mesh->index_buffer
+                    });
+                    sg_apply_uniforms(0, &SG_RANGE(vs_params));
+                    sg_draw(0, entity->mesh->index_count, 1);
+                } else {
+                    // Grid uses non-indexed rendering
+                    sg_apply_bindings(&(sg_bindings){
+                        .vertex_buffers[0] = entity->mesh->vertex_buffer
+                    });
+                    sg_apply_uniforms(0, &SG_RANGE(vs_params));
+                    sg_draw(0, entity->mesh->vertex_count, 1);
+                }
+            }
+        }
+    }
+}
+
 Entity* create_entity(World *world) {
     if (world->entity_count >= 1000) return NULL;
 
@@ -89,7 +138,8 @@ Mesh* add_cube_mesh(World* world, Entity* entity) {
         .label = "cube-indices"
     });
 
-    mesh->vertex_count = 36;  // 6 faces * 2 triangles * 3 vertices
+    mesh->vertex_count = 24;  // 6 faces * 2 triangles * 3 vertices
+    mesh->index_count = 36;
     entity->mesh = mesh;
     return mesh;
 }
@@ -167,6 +217,7 @@ for (int i = 0; i < 12; i += 6) {  // Print first two vertices (one line)
         .label = "grid-vertices"
     });
     mesh->vertex_count = vertex_idx / 6;
+    mesh->index_count = 0;
     mesh->index_buffer.id = 0; // No index buffer for grid
 
     free(vertices);
@@ -174,9 +225,29 @@ for (int i = 0; i < 12; i += 6) {  // Print first two vertices (one line)
     return mesh;
 }
 
-Entity* create_grid_entity(World* world) {
+Entity* create_cube(World* world, float x, float y, float z) {
     Entity* entity = create_entity(world);
-    add_transform(world, entity, 0.0f, 0.0f, 0.0f);    
-    add_grid_mesh(world, entity);
+    add_transform(world, entity, x, y, z);
+    add_cube_mesh(world, entity);  // Your existing function
+    
+    // Add render handle
+    RenderHandle* render = &world->renders[entity->id];
+    render->type = PIPELINE_STANDARD;
+    entity->render = render;
+    
     return entity;
 }
+
+Entity* create_grid(World* world) {
+    Entity* entity = create_entity(world);
+    add_transform(world, entity, 0, 0, 0);
+    add_grid_mesh(world, entity);  // Your existing function
+    
+    RenderHandle* render = &world->renders[entity->id];
+    render->type = PIPELINE_GRID;
+    entity->render = render;
+    
+    return entity;
+}
+
+

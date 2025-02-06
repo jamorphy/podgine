@@ -33,225 +33,6 @@ sg_bindings bind;
 World world;
 sg_pipeline grid_pip;
 
-typedef struct {
-    mat4x4 mvp;
-} vs_params_t;
-
-/* void create_gizmo(void) { */
-/*     const float axis_length = 5.0f; */
-/*     const float radius = 0.05f; */
-/*     const int segments = 8; */
-/*     float vertices[144 * 6];  // (segments * 6 vertices * 3 axes) * 6 floats per vertex */
-/*     int vertex_count = 0; */
-
-/*     // X axis (red) cylinder */
-/*     for(int i = 0; i < segments; i++) { */
-/*         float angle1 = (float)i * 2.0f * PI / segments; */
-/*         float angle2 = (float)(i + 1) * 2.0f * PI / segments; */
-        
-/*         float y1 = cosf(angle1) * radius; */
-/*         float z1 = sinf(angle1) * radius; */
-/*         float y2 = cosf(angle2) * radius; */
-/*         float z2 = sinf(angle2) * radius; */
-
-/*         // First triangle */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = y1; */
-/*         vertices[vertex_count++] = z1; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         vertices[vertex_count++] = axis_length; */
-/*         vertices[vertex_count++] = y1; */
-/*         vertices[vertex_count++] = z1; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = y2; */
-/*         vertices[vertex_count++] = z2; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         // Second triangle */
-/*         vertices[vertex_count++] = axis_length; */
-/*         vertices[vertex_count++] = y1; */
-/*         vertices[vertex_count++] = z1; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         vertices[vertex_count++] = axis_length; */
-/*         vertices[vertex_count++] = y2; */
-/*         vertices[vertex_count++] = z2; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = y2; */
-/*         vertices[vertex_count++] = z2; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*     } */
-
-/*     // Y axis (green) cylinder */
-/*     for(int i = 0; i < segments; i++) { */
-/*         float angle1 = (float)i * 2.0f * PI / segments; */
-/*         float angle2 = (float)(i + 1) * 2.0f * PI / segments; */
-        
-/*         float x1 = cosf(angle1) * radius; */
-/*         float z1 = sinf(angle1) * radius; */
-/*         float x2 = cosf(angle2) * radius; */
-/*         float z2 = sinf(angle2) * radius; */
-
-/*         // First triangle */
-/*         vertices[vertex_count++] = x1; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = z1; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         vertices[vertex_count++] = x1; */
-/*         vertices[vertex_count++] = axis_length; */
-/*         vertices[vertex_count++] = z1; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         vertices[vertex_count++] = x2; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = z2; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         // Second triangle */
-/*         vertices[vertex_count++] = x1; */
-/*         vertices[vertex_count++] = axis_length; */
-/*         vertices[vertex_count++] = z1; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         vertices[vertex_count++] = x2; */
-/*         vertices[vertex_count++] = axis_length; */
-/*         vertices[vertex_count++] = z2; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-
-/*         vertices[vertex_count++] = x2; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = z2; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*     } */
-
-/*     // Z axis (blue) cylinder */
-/*     for(int i = 0; i < segments; i++) { */
-/*         float angle1 = (float)i * 2.0f * PI / segments; */
-/*         float angle2 = (float)(i + 1) * 2.0f * PI / segments; */
-        
-/*         float x1 = cosf(angle1) * radius; */
-/*         float y1 = sinf(angle1) * radius; */
-/*         float x2 = cosf(angle2) * radius; */
-/*         float y2 = sinf(angle2) * radius; */
-
-/*         // First triangle */
-/*         vertices[vertex_count++] = x1; */
-/*         vertices[vertex_count++] = y1; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-
-/*         vertices[vertex_count++] = x1; */
-/*         vertices[vertex_count++] = y1; */
-/*         vertices[vertex_count++] = axis_length; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-
-/*         vertices[vertex_count++] = x2; */
-/*         vertices[vertex_count++] = y2; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-
-/*         // Second triangle */
-/*         vertices[vertex_count++] = x1; */
-/*         vertices[vertex_count++] = y1; */
-/*         vertices[vertex_count++] = axis_length; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-
-/*         vertices[vertex_count++] = x2; */
-/*         vertices[vertex_count++] = y2; */
-/*         vertices[vertex_count++] = axis_length; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-
-/*         vertices[vertex_count++] = x2; */
-/*         vertices[vertex_count++] = y2; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 0.0f; */
-/*         vertices[vertex_count++] = 1.0f; */
-/*     } */
-
-/*     state.gizmo_bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){ */
-/*         .data = (sg_range){vertices, vertex_count * sizeof(float)}, */
-/*         .label = "gizmo-vertices" */
-/*     }); */
-
-/*     char* vs = read_shader_file("src/shaders/grid_vs.metal"); */
-/*     char* fs = read_shader_file("src/shaders/grid_fs.metal"); */
-
-/*     sg_shader shd = sg_make_shader(&(sg_shader_desc){ */
-/*         .uniform_blocks[0] = { */
-/*             .stage = SG_SHADERSTAGE_VERTEX, */
-/*             .size = sizeof(vs_params_t), */
-/*             .msl_buffer_n = 0, */
-/*         }, */
-/*         .vertex_func = { */
-/*             .source = vs, */
-/*         }, */
-/*         .fragment_func = { */
-/*             .source = fs, */
-/*         } */
-/*     }); */
-
-/*     state.gizmo_pip = sg_make_pipeline(&(sg_pipeline_desc){ */
-/*         .layout = { */
-/*             .buffers[0].stride = 6 * sizeof(float),  // pos + color */
-/*             .attrs = { */
-/*                 [0] = { .format = SG_VERTEXFORMAT_FLOAT3 },  // position */
-/*                 [1] = { .format = SG_VERTEXFORMAT_FLOAT3 }   // color */
-/*             } */
-/*         }, */
-/*         .shader = shd, */
-/*         .primitive_type = SG_PRIMITIVETYPE_TRIANGLES, */
-/*         .depth = { */
-/*             .write_enabled = true, */
-/*             .compare = SG_COMPAREFUNC_LESS_EQUAL, */
-/*         }, */
-/*         .label = "gizmo-pipeline" */
-/*     }); */
-
-/*     free(vs); */
-/*     free(fs); */
-/* } */
-
 void init(void) {
     sg_setup(&(sg_desc){
         .environment = sglue_environment(),
@@ -259,16 +40,11 @@ void init(void) {
     });
 
     memset(&world, 0, sizeof(World));
-    
-    create_cube_entity(&world, 0.0f, 0.0f, 0.0f);
-    create_grid_entity(&world);
 
-    // Create shader
     char* vs_source = read_shader_file("src/shaders/cube_vs.metal");
     char* fs_source = read_shader_file("src/shaders/cube_fs.metal");
-    
-    
-    sg_shader shd = sg_make_shader(&(sg_shader_desc){
+
+    sg_shader standard_shader = sg_make_shader(&(sg_shader_desc){
         .uniform_blocks[0] = {
             .stage = SG_SHADERSTAGE_VERTEX,
             .size = sizeof(vs_params_t),
@@ -278,16 +54,15 @@ void init(void) {
         .fragment_func = { .source = fs_source }
     });
 
-    // Create pipeline
-    pip = sg_make_pipeline(&(sg_pipeline_desc){
+    world.pipelines[PIPELINE_STANDARD] = sg_make_pipeline(&(sg_pipeline_desc){
         .layout = {
-            .buffers[0].stride = 28,  // 3 floats position + 4 floats color = 7 floats * 4 bytes
+            .buffers[0].stride = 28,
             .attrs = {
                 [0].format = SG_VERTEXFORMAT_FLOAT3,
                 [1].format = SG_VERTEXFORMAT_FLOAT4
             }
         },
-        .shader = shd,
+        .shader = standard_shader,
         .index_type = SG_INDEXTYPE_UINT16,
         .cull_mode = SG_CULLMODE_BACK,
         .depth = {
@@ -298,88 +73,43 @@ void init(void) {
 
     char* grid_vs_source = read_shader_file("src/shaders/grid_vs.metal");
     char* grid_fs_source = read_shader_file("src/shaders/grid_fs.metal");
-    printf("Grid VS shader source:\n%s\n", grid_vs_source);
-    printf("Grid FS shader source:\n%s\n", grid_fs_source);
 
-    sg_shader grid_shd = sg_make_shader(&(sg_shader_desc){
+    sg_shader grid_shader = sg_make_shader(&(sg_shader_desc){
         .uniform_blocks[0] = {
             .stage = SG_SHADERSTAGE_VERTEX,
             .size = sizeof(vs_params_t),
             .msl_buffer_n = 0,
         },
-        .vertex_func = {.source = grid_vs_source },
-        .fragment_func = {.source = grid_fs_source }
+        .vertex_func = { .source = grid_vs_source },
+        .fragment_func = { .source = grid_fs_source }
     });
 
-    grid_pip = sg_make_pipeline(&(sg_pipeline_desc){
+    world.pipelines[PIPELINE_GRID] = sg_make_pipeline(&(sg_pipeline_desc){
         .layout = {
-            .buffers[0].stride = 6 * sizeof(float), // vec3 pos, vec3 color
+            .buffers[0].stride = 6 * sizeof(float),
             .attrs = {
                 [0].format = SG_VERTEXFORMAT_FLOAT3,
                 [1].format = SG_VERTEXFORMAT_FLOAT3
             }
         },
-        .shader = grid_shd,
-        .primitive_type = SG_PRIMITIVETYPE_LINES, // Important: Use lines
+        .shader = grid_shader,
+        .primitive_type = SG_PRIMITIVETYPE_LINES,
         .depth = {
             .write_enabled = true,
             .compare = SG_COMPAREFUNC_LESS_EQUAL,
-         },
+        },
     });
+    
+    create_cube(&world, 0.0f, 0.0f, 0.0f);
+    create_grid(&world);
 
     world.camera.distance = 6.0f;
     world.camera.pitch = 30.0f;
     world.camera.yaw = 0.0f;
-    
+
     free(vs_source);
     free(fs_source);
 }
-
-void render(World* world, mat4x4 view, mat4x4 proj, sg_pipeline standard_pip, sg_pipeline grid_pip) {
-    for (uint32_t i = 0; i < world->entity_count; i++) {
-        Entity* entity = &world->entities[i];       
-        
-        if (entity->transform && entity->mesh) {
-
-            // Setup model matrix and MVP
-            mat4x4 model;
-            mat4x4_identity(model);
-            mat4x4_translate(model, 
-                entity->transform->position[0],
-                entity->transform->position[1],
-                entity->transform->position[2]
-            );
-            
-            mat4x4 mvp;
-            mat4x4_mul(mvp, proj, view);
-            mat4x4_mul(mvp, mvp, model);
-            
-            vs_params_t vs_params;
-            memcpy(&vs_params.mvp, mvp, sizeof(mat4x4));
-            
-            // Choose pipeline based on whether it's indexed or not
-            sg_pipeline pipeline = entity->mesh->index_buffer.id == 0 ? grid_pip : standard_pip;
-            sg_apply_pipeline(pipeline);
-
-            // Apply bindings based on whether we have an index buffer
-            if (entity->mesh->index_buffer.id != 0) {
-                sg_apply_bindings(&(sg_bindings){
-                    .vertex_buffers[0] = entity->mesh->vertex_buffer,
-                    .index_buffer = entity->mesh->index_buffer
-                });
-            } else {
-                sg_apply_bindings(&(sg_bindings){
-                    .vertex_buffers[0] = entity->mesh->vertex_buffer
-                });
-            }
-
-            sg_apply_uniforms(0, &SG_RANGE(vs_params));
-            sg_draw(0, entity->mesh->vertex_count, 1);
-        }
-    }
-}
-
-
 
 void input(const sapp_event* ev) {
     switch (ev->type) {
@@ -460,7 +190,7 @@ void frame(void) {
             .swapchain = sglue_swapchain()
         });
 
-    render(&world, view, proj, pip, grid_pip);
+    render(&world, view, proj);
 
     sg_end_pass();
     sg_commit();
