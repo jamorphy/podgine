@@ -17,12 +17,29 @@ void render(World* world, mat4x4 view, mat4x4 proj) {
                 }
                 
                 mat4x4 model;
+                mat4x4 translation;
+                mat4x4 scale;
+
+                // Start with identity matrices
                 mat4x4_identity(model);
-                mat4x4_translate(model, 
-                    entity->transform->position[0],
-                    entity->transform->position[1],
-                    entity->transform->position[2]
-                );
+                mat4x4_identity(translation);
+                mat4x4_identity(scale);
+
+                // Set up scale matrix
+                scale[0][0] = entity->transform->scale[0];
+                scale[1][1] = entity->transform->scale[1];
+                scale[2][2] = entity->transform->scale[2];
+
+                // Set up translation matrix
+                mat4x4_translate(translation,
+                                 entity->transform->position[0],
+                                 entity->transform->position[1],
+                                 entity->transform->position[2]
+                                 );
+
+                // Combine transformations in correct order
+                mat4x4_mul(model, model, scale);      // Apply scale first
+                mat4x4_mul(model, model, translation); // Then apply translation
                 
                 mat4x4 mvp;
                 mat4x4_mul(mvp, proj, view);
@@ -75,9 +92,9 @@ Transform* add_transform(World *world, Entity *entity, float x, float y, float z
     transform->rotation[0] = 0.0f;
     transform->rotation[1] = 0.0f;
     transform->rotation[2] = 0.0f;
-    transform->scale[0] = 1.0f;
-    transform->scale[1] = 1.0f;
-    transform->scale[2] = 1.0f;
+    transform->scale[0] = 3.0f;
+    transform->scale[1] = 2.0f;
+    transform->scale[2] = 5.0f;
     
     entity->transform = transform;
     return transform;
@@ -218,7 +235,7 @@ for (int i = 0; i < 12; i += 6) {  // Print first two vertices (one line)
     });
     mesh->vertex_count = vertex_idx / 6;
     mesh->index_count = 0;
-    mesh->index_buffer.id = 0; // No index buffer for grid
+    mesh->index_buffer.id = 0;
 
     free(vertices);
     entity->mesh = mesh;
