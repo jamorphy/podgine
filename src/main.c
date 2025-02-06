@@ -16,6 +16,7 @@
 
 #include "ecs.h"
 
+#define NUKLEAR_IMPLEMENTATION
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
@@ -32,12 +33,20 @@ sg_pipeline pip;
 sg_bindings bind;
 World world;
 sg_pipeline grid_pip;
+struct nk_context* nk_ctx;
+
+// vvvv move these functions out
+
+// ^^^^ end: move these functions out
 
 void init(void) {
     sg_setup(&(sg_desc){
         .environment = sglue_environment(),
         .logger.func = slog_func,
     });
+    
+    snk_setup(&(snk_desc_t){0});
+    nk_style_hide_cursor(snk_new_frame());
 
     memset(&world, 0, sizeof(World));
 
@@ -101,6 +110,8 @@ void init(void) {
     });
     
     create_cube(&world, 0.0f, 0.0f, 0.0f);
+    create_cube(&world, 5.5f, 0.0f, 0.0f);
+    create_cube(&world, 1.0f, 10.0f, 6.0f);
     create_grid(&world);
 
     world.camera.distance = 6.0f;
@@ -112,6 +123,10 @@ void init(void) {
 }
 
 void input(const sapp_event* ev) {
+    if (snk_handle_event(ev)) {
+        // If Nuklear handled the event, don't process it further
+        return;
+    }
     switch (ev->type) {
         case SAPP_EVENTTYPE_MOUSE_DOWN: {
 
@@ -191,12 +206,24 @@ void frame(void) {
         });
 
     render(&world, view, proj);
+    
+    nk_ctx = snk_new_frame();
+    if (nk_begin(nk_ctx, "nukes", nk_rect(0, 0, 200, 125),
+                 NK_WINDOW_BORDER | NK_WINDOW_TITLE)) {
+        nk_layout_row_static(nk_ctx, 30, 80, 1);
+        if (nk_button_label(nk_ctx, "button")) {
+            printf("clicked.\n");
+        }
+    }
+    snk_render(sapp_width(), sapp_height());
+    nk_end(nk_ctx);
 
     sg_end_pass();
     sg_commit();
 }
 
 void cleanup(void) {
+    nk_free(nk_ctx);
     snk_shutdown();
     sg_shutdown();
 }
