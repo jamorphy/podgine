@@ -101,3 +101,11 @@ void update_camera_system(World* world);
 void render(World* world, mat4x4 view, mat4x4 proj);
 Entity* create_cube(World* world, float x, float y, float z);
 Entity* create_grid(World* world);
+void create_camera(World* world,
+                   float distance,
+                   float pitch,
+                   float yaw,
+                   float x,
+                   float y,
+                   float z,
+                   const char* name);

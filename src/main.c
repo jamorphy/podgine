@@ -37,42 +37,20 @@ struct nk_context* nk_ctx;
 
 // vvvv move these functions out
 
-void create_camera(World* world,
-                   float distance,
-                   float pitch,
-                   float yaw,
-                   float x,
-                   float y,
-                   float z,
-                   const char* name) {
-    // Check if we have room for another camera
-    if (world->camera_count >= 16) {
-        printf("Warning: Maximum number of cameras reached\n");
-        return;
-    }
+void copy_camera_state(Camera* dest, Camera* src) {
+    dest->position[0] = src->position[0];
+    dest->position[1] = src->position[1];
+    dest->position[2] = src->position[2];
+    dest->distance = src->distance;
+    dest->pitch = src->pitch;
+    dest->yaw = src->yaw;
+}
 
-    Camera* new_cam = &world->cameras[world->camera_count];
-    
-    // Initialize camera properties
-    new_cam->distance = distance;
-    new_cam->pitch = pitch;
-    new_cam->yaw = yaw;
-    new_cam->position[0] = x;
-    new_cam->position[1] = y;
-    new_cam->position[2] = z;
-    new_cam->id = world->next_camera_id++;
-    strncpy(new_cam->name, name, 31);
-    new_cam->name[31] = '\0';  // Ensure null termination
-    
-    // Initialize default values
-    new_cam->center[0] = 0.0f;  // Looking at origin
-    new_cam->center[1] = 0.0f;
-    new_cam->center[2] = 0.0f;
-    new_cam->up[0] = 0.0f;     // Up vector
-    new_cam->up[1] = 1.0f;
-    new_cam->up[2] = 0.0f;
-
-    world->camera_count++;
+void reset_movement_keys(CameraControls* control) {
+    control->key_w = false;
+    control->key_a = false;
+    control->key_s = false;
+    control->key_d = false;
 }
 
 // ^^^^ end: move these functions out
@@ -156,7 +134,7 @@ void init(void) {
     create_cube(&world, 1.0f, 3.0f, 8.0f);
     create_grid(&world);
 
-    create_camera(&world, 72.0f, 23.0f, -5.0f, 0.0f, 0.0f, 0.0f, "editor camera default");
+    create_camera(&world, 72.0f, 23.0f, -5.0f, 8.0f, 8.0f, 8.0f, "editor camera default");
     create_camera(&world, 130.0f, 20.50f, -14.0f, 17.0f, 0.0f, 11.5f, "Wide Shot");
     create_camera(&world, 80.0f, -7.0f, -180.0f, 14.0f, 0.0f, 44.75f, "under");
     create_camera(&world, 43.0f, 3.95f, -343.0f, 2.0f, 0.0f, -21.0f, "close 2 Shot");
@@ -172,11 +150,10 @@ void input(const sapp_event* ev) {
     switch (ev->type) {
     case SAPP_EVENTTYPE_KEY_DOWN:
         if (ev->key_code == SAPP_KEYCODE_ESCAPE) {
-            printf("DEBUG: Returning to editor camera\n");
-            world.camera.distance = world.cameras[EDITOR_CAMERA_INDEX].distance;
-            world.camera.pitch = world.cameras[EDITOR_CAMERA_INDEX].pitch;
-            world.camera.yaw = world.cameras[EDITOR_CAMERA_INDEX].yaw;
-            world.in_edit_mode = true;
+            if (!world.in_edit_mode) {
+                world.camera = world.cameras[EDITOR_CAMERA_INDEX];
+                world.in_edit_mode = true;
+            }
         }
         else if (ev->key_code == SAPP_KEYCODE_W) world.control.key_w = true;
         else if (ev->key_code == SAPP_KEYCODE_A) world.control.key_a = true;
@@ -344,13 +321,10 @@ void frame(void) {
         for (int i = 1; i < world.camera_count; i++) {
             snprintf(buffer, sizeof(buffer), "Camera %d: %s", i+1, world.cameras[i].name);
             if (nk_button_label(nk_ctx, buffer)) {
+                reset_movement_keys(&world.control);
                 if (world.in_edit_mode) {
-                    world.cameras[EDITOR_CAMERA_INDEX].position[0] = world.camera.position[0];
-                    world.cameras[EDITOR_CAMERA_INDEX].position[1] = world.camera.position[1];
-                    world.cameras[EDITOR_CAMERA_INDEX].position[2] = world.camera.position[2];
-                    world.cameras[EDITOR_CAMERA_INDEX].distance = world.camera.distance;
-                    world.cameras[EDITOR_CAMERA_INDEX].pitch = world.camera.pitch;
-                    world.cameras[EDITOR_CAMERA_INDEX].yaw = world.camera.yaw;
+                    world.cameras[EDITOR_CAMERA_INDEX] = world.camera;
+                    world.in_edit_mode = false;
                 }
                 
                 Camera* selected = &world.cameras[i];
@@ -361,7 +335,6 @@ void frame(void) {
                 world.camera.pitch = selected->pitch;
                 world.camera.yaw = selected->yaw;
                 world.in_edit_mode = false;
-                
             }
         }
 
