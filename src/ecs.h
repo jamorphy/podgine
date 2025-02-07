@@ -11,7 +11,8 @@ typedef struct {
 typedef enum {
     PIPELINE_STANDARD,
     PIPELINE_GRID,
-    PIPELINE_COUNT
+    PIPELINE_COUNT,
+    PIPELINE_SPRITE
 } PipelineType;
 
 

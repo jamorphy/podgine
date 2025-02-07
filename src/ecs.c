@@ -92,9 +92,9 @@ Transform* add_transform(World *world, Entity *entity, float x, float y, float z
     transform->rotation[0] = 0.0f;
     transform->rotation[1] = 0.0f;
     transform->rotation[2] = 0.0f;
-    transform->scale[0] = 3.0f;
+    transform->scale[0] = 2.0f;
     transform->scale[1] = 2.0f;
-    transform->scale[2] = 5.0f;
+    transform->scale[2] = 2.0f;
     
     entity->transform = transform;
     return transform;

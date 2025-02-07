@@ -7,17 +7,17 @@ struct params_t {
 
 struct vs_in {
     float3 pos [[attribute(0)]];
-    float3 color [[attribute(1)]];
+    float2 texcoord [[attribute(1)]];
 };
 
 struct vs_out {
     float4 pos [[position]];
-    float3 color;
+    float2 texcoord [[user(texcoord)]];  // Add the user attribute qualifier
 };
 
 vertex vs_out _main(vs_in in [[stage_in]], constant params_t& params [[buffer(0)]]) {
     vs_out out;
     out.pos = params.mvp * float4(in.pos, 1.0);
-    out.color = in.color;
+    out.texcoord = in.texcoord;
     return out;
 }
