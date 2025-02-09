@@ -285,12 +285,19 @@ void init(void) {
                 .compare = SG_COMPAREFUNC_LESS_EQUAL,
             },
         });
+
+    /* create_cube(&world, 100.0f, 100.0f, 100.0f); */
+    /* create_cube(&world, 5.5f, 0.0f, 0.0f); */
+    /* create_cube(&world, 1.0f, 10.0f, 6.0f); */
+    /* create_cube(&world, 12.3f, 17.0f, 9.0f); */
+    /* create_cube(&world, 1.0f, 3.0f, 8.0f); */
+
+    printf("before create cube_new\n");
+
+    create_cube_new(&world, 5.0f, 5.0f, 5.0f);
     
-    create_cube(&world, 100.0f, 100.0f, 100.0f);
-    create_cube(&world, 5.5f, 0.0f, 0.0f);
-    create_cube(&world, 1.0f, 10.0f, 6.0f);
-    create_cube(&world, 12.3f, 17.0f, 9.0f);
-    create_cube(&world, 1.0f, 3.0f, 8.0f);
+    printf("after create cube_new\n");
+
     create_grid(&world);
 
     create_camera(&world, 72.0f, 23.0f, -5.0f, 8.0f, 8.0f, 8.0f, "editor camera default");
@@ -448,10 +455,7 @@ void frame(void) {
         });
 
     draw_textured_quad(view, proj);
-    render(&world, view, proj);
-    
-    
-    
+    render_entities(&world, view, proj);
     
     nk_ctx = snk_new_frame();
     if (nk_begin(nk_ctx, "nukes", nk_rect(0, 0, 200, 400),

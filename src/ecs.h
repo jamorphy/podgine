@@ -1,12 +1,38 @@
 #pragma once
 
 #include "../libs/sokol/sokol_gfx.h"
+#include "../libs/sokol/sokol_glue.h"
 #include "../libs/sokol/linmath.h"
 #include <stdint.h>
+#include "utils.h"
 
 typedef struct {
     mat4x4 mvp;
 } vs_params_t;
+
+typedef struct {
+    sg_buffer vertex_buffer;
+    sg_buffer index_buffer;
+    sg_bindings bindings;
+    int index_count;
+    int vertex_count;
+} Mesh;
+
+typedef struct {
+    sg_shader shader;
+    sg_pipeline pipeline;
+} Material;
+
+typedef struct {
+    Mesh *mesh;
+    Material *material;
+} Renderable;
+
+typedef struct {
+    float position[3];
+    float rotation[3];
+    float scale[3];
+} Transform;    
 
 typedef enum {
     PIPELINE_STANDARD,
@@ -15,25 +41,12 @@ typedef enum {
     PIPELINE_SPRITE
 } PipelineType;
 
-
 typedef struct {
     PipelineType type;
     sg_pipeline pipeline;
 } RenderHandle;
 
 // Components
-typedef struct {
-    float position[3];
-    float rotation[3];
-    float scale[3];
-} Transform;
-
-typedef struct {
-    sg_buffer vertex_buffer;
-    sg_buffer index_buffer;
-    int vertex_count;
-    int index_count;
-} Mesh;
 
 typedef struct {
     uint32_t id;
@@ -63,7 +76,9 @@ typedef struct {
     // component pools
     Transform* transform;
     Mesh* mesh;
+    
     RenderHandle* render;
+    Renderable* renderable;
 } Entity;
 
 #define EDITOR_CAMERA_INDEX 0
@@ -75,7 +90,11 @@ typedef struct {
 
     // Component pools
     Transform transforms[1000];
+    uint32_t transform_count;
     Mesh meshes[1000];
+    uint32_t mesh_count;
+    Material materials[1000];
+    uint32_t material_count;
     
     // maybe move camera stuff to another struct
     Camera cameras[16];
@@ -89,7 +108,22 @@ typedef struct {
     
     RenderHandle renders[1000];
     sg_pipeline pipelines[1000];
+
+    Renderable renderables[1000];
+    uint32_t renderable_count;
 } World;
+
+
+// move later
+
+Mesh* create_cube_mesh(World* world);
+Material* create_cube_material(World* world);
+Entity* create_cube_new(World* world, float x, float y, float z);
+
+char* read_shader_file(const char* filepath);
+void render_entities(World* world, mat4x4 view, mat4x4 proj);
+
+// move later
 
 Entity* create_entity(World* world);
 Transform* add_transform(World* world, Entity* entity, float x, float y, float z);
