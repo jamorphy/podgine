@@ -297,6 +297,7 @@ void init(void) {
     create_camera(&world, 130.0f, 20.50f, -14.0f, 17.0f, 0.0f, 11.5f, "Wide Shot");
     create_camera(&world, 80.0f, -7.0f, -180.0f, 14.0f, 0.0f, 44.75f, "under");
     create_camera(&world, 43.0f, 3.95f, -343.0f, 2.0f, 0.0f, -21.0f, "close 2 Shot");
+    create_camera(&world, 2.0f, 55.93f, -1.69f, -1.38f, 0.0f, 5.84f, "kermit");
 
     world.camera = world.cameras[EDITOR_CAMERA_INDEX];
 
