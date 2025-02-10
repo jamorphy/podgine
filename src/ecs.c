@@ -15,14 +15,14 @@ Mesh* add_grid_mesh(World* world, Entity* entity) {
     const int VERTS_PER_LINE = 2;
     const int TOTAL_LINES = LINES_PER_DIR * 2;
     const int VERTEX_COUNT = TOTAL_LINES * VERTS_PER_LINE;
-    
+
     float* vertices = (float*)malloc(VERTEX_COUNT * 6 * sizeof(float));
     int vertex_idx = 0;
 
     // Create grid lines
     for (int i = -GRID_SIZE; i <= GRID_SIZE; i++) {
         float color_intensity = 1.0f;
-        
+
         // Lines along X axis
         vertices[vertex_idx++] = i * GRID_SPACE;
         vertices[vertex_idx++] = -0.01f;
@@ -30,7 +30,7 @@ Mesh* add_grid_mesh(World* world, Entity* entity) {
         vertices[vertex_idx++] = color_intensity;
         vertices[vertex_idx++] = color_intensity;
         vertices[vertex_idx++] = color_intensity;
-        
+
         vertices[vertex_idx++] = i * GRID_SPACE;
         vertices[vertex_idx++] = 0.0f;
         vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE;
@@ -45,7 +45,7 @@ Mesh* add_grid_mesh(World* world, Entity* entity) {
         vertices[vertex_idx++] = color_intensity;
         vertices[vertex_idx++] = color_intensity;
         vertices[vertex_idx++] = color_intensity;
-        
+
         vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE;
         vertices[vertex_idx++] = 0.0f;
         vertices[vertex_idx++] = i * GRID_SPACE;
@@ -132,7 +132,7 @@ Mesh* create_cube_mesh(void) {
          1.0f, -1.0f,  1.0f,   0.0f, 1.0f, 0.0f, 1.0f,  // Bottom-right-front (green)
          1.0f,  1.0f,  1.0f,   0.0f, 0.0f, 1.0f, 1.0f,  // Top-right-front (blue)
         -1.0f,  1.0f,  1.0f,   1.0f, 1.0f, 0.0f, 1.0f,  // Top-left-front (yellow)
-        
+
         // Back face
         -1.0f, -1.0f, -1.0f,   1.0f, 0.0f, 1.0f, 1.0f,  // Bottom-left-back (magenta)
          1.0f, -1.0f, -1.0f,   0.0f, 1.0f, 1.0f, 1.0f,  // Bottom-right-back (cyan)
@@ -303,7 +303,7 @@ Entity* create_entity(World *world) {
         printf("Exceeded max entity count\n");
         return NULL;
     }
-   
+
     Entity* entity = &world->entities[world->entity_count];
     entity->id = world->next_entity_id++;
 
@@ -311,7 +311,7 @@ Entity* create_entity(World *world) {
     entity->transform.scale[0] = 1.0f;
     entity->transform.scale[1] = 1.0f;
     entity->transform.scale[2] = 1.0f;
-    
+
     entity->mesh = NULL;
     entity->renderable = NULL;
 
@@ -323,7 +323,7 @@ Entity* create_entity(World *world) {
 void destroy_entity(World *world, Entity *entity) {
     // Find the index of the entity in the array
     size_t index = entity - world->entities;
-    
+
     // Validate index
     if (index >= world->entity_count) {
         printf("Invalid entity pointer\n");
@@ -334,7 +334,7 @@ void destroy_entity(World *world, Entity *entity) {
     if (index < world->entity_count - 1) {
         // Copy the last entity to this position
         world->entities[index] = world->entities[world->entity_count - 1];
-        
+
         // If you have systems referencing entities by pointer, you'll need to
         // update those references to point to the new location
         // This is one reason some people prefer using indices or IDs instead of pointers
@@ -352,10 +352,14 @@ Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
     entity->transform.position[0] = pos[0];
     entity->transform.position[1] = pos[1];
     entity->transform.position[2] = pos[2];
-    
+
     entity->transform.scale[0] = scale[0];
     entity->transform.scale[1] = scale[1];
     entity->transform.scale[2] = scale[2];
+
+    entity->transform.rotation[0] = 0.0f;
+    entity->transform.rotation[1] = 0.0f;
+    entity->transform.rotation[2] = 0.0f;
 
     int img_width, img_height, img_channels;
     unsigned char* img_data = stbi_load(image_path, &img_width, &img_height, &img_channels, 4);
@@ -369,9 +373,9 @@ Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
         .width = img_width,
         .height = img_height,
         .pixel_format = SG_PIXELFORMAT_RGBA8,
-        .data.subimage[0][0] = { 
-            .ptr = img_data, 
-            .size = (size_t)(img_width * img_height * 4) 
+        .data.subimage[0][0] = {
+            .ptr = img_data,
+            .size = (size_t)(img_width * img_height * 4)
         }
     });
 
@@ -382,7 +386,7 @@ Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
         printf("Exceeded max renderable count\n");
         return NULL;
     }
-    
+
     Renderable* renderable = &world->renderables[world->renderable_count++];
     entity->renderable = renderable;
 
@@ -394,17 +398,17 @@ Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
 }
 
 Entity* create_cube(World* world, vec3 pos, vec3 scale) {
-    
+
     Entity* entity = create_entity(world);
     if (!entity) return NULL;
 
     entity->transform.position[0] = pos[0];
     entity->transform.position[1] = pos[1];
     entity->transform.position[2] = pos[2];
-    
+
     entity->transform.scale[0] = scale[0];
     entity->transform.scale[1] = scale[1];
-    entity->transform.scale[2] = scale[2];  
+    entity->transform.scale[2] = scale[2];
 
     if (world->renderable_count >= 1000) {
         printf("Exceeded max renderable count\n");
@@ -419,7 +423,7 @@ Entity* create_cube(World* world, vec3 pos, vec3 scale) {
 
     return entity;
 }
-  
+
 // Function to compute the model matrix from the Transform component
 void compute_model_matrix(Transform* transform, mat4x4 out_matrix) {
     mat4x4_identity(out_matrix);

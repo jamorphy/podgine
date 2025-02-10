@@ -31,7 +31,7 @@ typedef struct {
     float position[3];
     float rotation[3];
     float scale[3];
-} Transform;    
+} Transform;
 
 typedef struct Entity {
     uint32_t id;
