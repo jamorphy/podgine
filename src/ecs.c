@@ -453,7 +453,7 @@ Entity* create_cube_new(World* world, float x, float y, float z) {
 
     return entity;
 }
-
+  
 // Function to compute the model matrix from the Transform component
 void compute_model_matrix(Transform* transform, mat4x4 out_matrix) {
     mat4x4_identity(out_matrix);
