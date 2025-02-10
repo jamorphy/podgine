@@ -54,6 +54,8 @@ typedef struct {
     float distance;
     float pitch;
     float yaw;
+    vec3 forward;
+    vec3 right;
     char name[32];
 } Camera;
 

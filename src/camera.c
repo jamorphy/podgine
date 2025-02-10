@@ -1,5 +1,26 @@
 #include "camera.h"
 
+/* void update_camera_frame(World* world) { */
+/*     float move_speed = 0.5f; */
+/*     float pitch_rad = TO_RAD(world.camera.pitch); */
+/*     float yaw_rad = TO_RAD(normalized_yaw); */
+/*     float normalized_yaw = fmodf(world->camera.yaw, 360.0f); */
+/*     if (normalized_yaw < 0) normalized_yaw += 360.0f; */
+
+/*     // WASD movement calculations */
+/*     world->camera.forward = { */
+/*         sinf(yaw_rad), */
+/*         0, */
+/*         cosf(yaw_rad) */
+/*     }; */
+    
+/*     world->camera.right = { */
+/*         cosf(yaw_rad), */
+/*         0, */
+/*         -sinf(yaw_rad) */
+/*     };     */
+/* } */
+
 /* void create_camera(World* world, */
 /*                    float distance, */
 /*                    float pitch, */
