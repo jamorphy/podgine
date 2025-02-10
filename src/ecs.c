@@ -280,6 +280,23 @@ Material* create_cube_material(void) {
     return material;
 }
 
+void init_camera_visualization(World* world)  {
+    // Create a material for camera visualization using your existing cube material
+    Material* camera_material = create_cube_material();
+    
+    // Store the material in your world's materials array
+    world->materials[world->material_count] = *camera_material;
+    free(camera_material);  // Free the allocated material after copying
+    
+    // Create a renderable for the camera visualization
+    world->renderables[world->renderable_count].material = &world->materials[world->material_count];
+    world->renderables[world->renderable_count].mesh = create_cube_mesh();  // Assuming you have this
+    world->material_count++;
+    world->renderable_count++;
+}
+
+
+
 void destroy_mesh(Mesh* mesh) {
     if (mesh) {
         sg_destroy_buffer(mesh->vertex_buffer);
@@ -443,6 +460,95 @@ void compute_model_matrix(Transform* transform, mat4x4 out_matrix) {
     mat4x4_scale_aniso(out_matrix, out_matrix, transform->scale[0], transform->scale[1], transform->scale[2]);
 }
 
+Mesh create_camera_mesh(void) {
+    // Simple pyramid-like shape for camera representation
+    float vertices[] = {
+        // Position (x, y, z)        // Color (r, g, b)
+        0.0f,  0.0f,  0.0f,         1.0f, 0.0f, 0.0f,  // base center
+        -0.5f, -0.5f, -1.0f,        1.0f, 0.0f, 0.0f,  // base corners
+        0.5f, -0.5f, -1.0f,         1.0f, 0.0f, 0.0f,
+        0.5f,  0.5f, -1.0f,         1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -1.0f,        1.0f, 0.0f, 0.0f,
+    };
+
+    uint16_t indices[] = {
+        0, 1, 2,  // sides
+        0, 2, 3,
+        0, 3, 4,
+        0, 4, 1,
+        1, 2, 3,  // base
+        1, 3, 4
+    };
+
+    sg_buffer_desc vbuf_desc = {
+        .data = SG_RANGE(vertices),
+        .label = "camera-vertices"
+    };
+
+    sg_buffer_desc ibuf_desc = {
+        .data = SG_RANGE(indices),
+        .label = "camera-indices"
+    };
+
+    Mesh mesh = {
+        .vertex_buffer = sg_make_buffer(&vbuf_desc),
+        .index_buffer = sg_make_buffer(&ibuf_desc),
+        .index_count = sizeof(indices) / sizeof(indices[0])
+    };
+
+    mesh.bindings.vertex_buffers[0] = mesh.vertex_buffer;
+    mesh.bindings.index_buffer = mesh.index_buffer;
+
+    return mesh;
+}
+
+void render_cameras(World* world, mat4x4 view, mat4x4 proj) {
+    for (int i = 0; i < world->camera_count; i++) {
+        Camera* camera = &world->cameras[i];
+        
+        printf("Rendering camera '%s':\n", camera->name);
+        printf("  Position: (%f, %f, %f)\n", 
+               camera->position[0], camera->position[1], camera->position[2]);
+        printf("  Pitch: %f, Yaw: %f\n", camera->pitch, camera->yaw);
+
+        // Start with identity
+        mat4x4 model_matrix;
+        mat4x4_identity(model_matrix);
+
+        mat4x4_translate_in_place(model_matrix, 
+            camera->position[0],
+            camera->position[1],
+            camera->position[2]);
+        
+        // Then rotate
+        mat4x4 temp;
+        float pitch_rad = camera->pitch * (M_PI / 180.0f);
+        float yaw_rad = camera->yaw * (M_PI / 180.0f);
+        
+        mat4x4_rotate_X(temp, model_matrix, pitch_rad);
+        mat4x4_rotate_Y(model_matrix, temp, yaw_rad);
+
+        // First scale (small cube)
+        mat4x4_scale(model_matrix, model_matrix, 0.25f);
+        
+        // MVP computation
+        mat4x4 mvp_matrix;
+        mat4x4_mul(mvp_matrix, proj, view);
+        mat4x4_mul(mvp_matrix, mvp_matrix, model_matrix);
+
+        Renderable* camera_renderable = &world->renderables[world->renderable_count - 1];
+        
+        sg_apply_pipeline(camera_renderable->material->pipeline);
+        sg_apply_bindings(&camera_renderable->mesh->bindings);
+
+        vs_params_t vs_params;
+        memcpy(vs_params.mvp, mvp_matrix, sizeof(mvp_matrix));
+        sg_apply_uniforms(0, &SG_RANGE(vs_params));
+
+        sg_draw(0, camera_renderable->mesh->index_count, 1);
+    }
+}
+
 void render_entities(World* world, mat4x4 view, mat4x4 proj) {
     for (uint32_t i = 0; i < world->entity_count; ++i) {
         Entity* entity = &world->entities[i];
@@ -475,3 +581,4 @@ void render_entities(World* world, mat4x4 view, mat4x4 proj) {
         }
     }
 }
+

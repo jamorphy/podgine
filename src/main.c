@@ -33,24 +33,29 @@ void init(void)
 
     init_nuklear_gui(&world);
 
-    create_cube(&world, (vec3) { 5.0f, 5.0f, 5.0f },    (vec3) { 2.0f, 2.0f, 2.0f });
-    create_cube(&world, (vec3) { -15.0f, 10.0f, 9.0f }, (vec3) { 3.0f, 3.0f, 4.0f });
+    //create_cube(&world, (vec3) { 5.0f, 5.0f, 5.0f },    (vec3) { 2.0f, 2.0f, 2.0f });
+    //create_cube(&world, (vec3) { -15.0f, 10.0f, 9.0f }, (vec3) { 3.0f, 3.0f, 4.0f });
 
     create_img(&world, "assets/kermit.jpg", (vec3) {0.0f, -5.0f, 0.0f}, (vec3) {75.0f, 75.0f, 75.0f});
-    create_img(&world, "assets/farm.jpg", (vec3) {-113.0f, 0.0f, 124.0f}, (vec3) {75.0f, 75.0f, 75.0f});
+    //create_img(&world, "assets/farm.jpg", (vec3) {-113.0f, 0.0f, 124.0f}, (vec3) {75.0f, 75.0f, 75.0f});
+
+
+
+    // DEFAULT EDITOR CAM
+    create_camera(&world, -1.27f, 8.0f, -52.0f, 8.0f, -177.0f, "default cam");
     
-    create_camera(&world, 72.0f, 23.0f, -5.0f, 8.0f, 8.0f, 8.0f, "editor camera default");
-    create_camera(&world, 130.0f, 20.50f, -14.0f, 17.0f, 0.0f, 11.5f, "Wide Shot");
-    create_camera(&world, 80.0f, -7.0f, -180.0f, 14.0f, 0.0f, 44.75f, "under");
-    create_camera(&world, 43.0f, 3.95f, -343.0f, 2.0f, 0.0f, -21.0f, "close 2 Shot");
-    create_camera(&world, 2.0f, 55.93f, -1.69f, -1.38f, 0.0f, 5.84f, "kermit");
+    create_camera(&world, -3.22f, 8.0f, 6.5f, 15.10f, 0.50f, "kermit standard");
+    create_camera(&world, -32.73f, 8.0f, 2.5f, 1.22f, -55.26f, "kermit from left");
+    create_camera(&world, 37.77f, 8.0f, 0.55f, -1.82f, 67.9f, "kermit from right");
+    create_camera(&world, 6.71f, 8.0f, -334.52f, 7.31f, 179.26f, "kermit far behind");
+
+    init_camera_visualization(&world);
 
     world.camera = world.cameras[EDITOR_CAMERA_INDEX];
 }
 
 void input(const sapp_event* ev)
 {
-    
     switch (ev->type) {
     case SAPP_EVENTTYPE_KEY_DOWN:
         if (ev->key_code == SAPP_KEYCODE_ESCAPE) {
@@ -185,6 +190,7 @@ void frame(void)
         });
 
     render_entities(&world, view, proj);
+    render_cameras(&world, view, proj);
     draw_nuklear_gui(&world);
 
     sg_end_pass();

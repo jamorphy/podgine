@@ -27,3 +27,5 @@ void render_entities(World* world, mat4x4 view, mat4x4 proj);
 Mesh* add_grid_mesh(World* world, Entity* entity);
 Entity* create_grid_entity(World* world);
 Entity* create_grid(World* world);
+void init_camera_visualization(World* world);
+void render_cameras(World* world, mat4x4 view, mat4x4 proj);
