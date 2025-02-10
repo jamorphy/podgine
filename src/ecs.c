@@ -3,137 +3,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../libs/sokol/stb_image.h"
+
 #define COMPONENTS_PER_VERTEX 7 // 3 pos floats + 4 color floats
-
-char* read_shader_file(const char* filepath) {
-    printf("Attempting to load shader: %s\n", filepath);
-    FILE* file = fopen(filepath, "r");
-    if (!file) {
-        printf("Failed to open shader file: %s\n", filepath);
-        return NULL;
-    }
-
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char* buffer = (char*)malloc(size + 1);
-    if (!buffer) {
-        fclose(file);
-        printf("Failed to allocate memory for shader\n");
-        return NULL;
-    }
-
-    fread(buffer, 1, size, file);
-    buffer[size] = '\0';
-    
-    fclose(file);
-    return buffer;
-}
-
-
-
-Entity* create_entity(World *world) {
-    if (world->entity_count >= 1000) return NULL;
-
-    Entity* entity = &world->entities[world->entity_count];
-    entity->id = world->next_entity_id++;
-    entity->transform = NULL;
-    entity->mesh = NULL;
-    entity->renderable = NULL;
-
-    world->entity_count++;
-    return entity;
-};
-
-Transform* add_transform(World *world, Entity *entity, float x, float y, float z) {
-    Transform* transform = &world->transforms[entity->id];
-    
-    transform->position[0] = x;
-    transform->position[1] = y;
-    transform->position[2] = z;
-    
-    // Initialize rotation and scale
-    transform->rotation[0] = 0.0f;
-    transform->rotation[1] = 0.0f;
-    transform->rotation[2] = 0.0f;
-    transform->scale[0] = 2.0f;
-    transform->scale[1] = 2.0f;
-    transform->scale[2] = 2.0f;
-    
-    entity->transform = transform;
-    return transform;
-}
-
-Mesh* add_cube_mesh(World* world, Entity* entity) {
-    Mesh* mesh = &world->meshes[entity->id];
-
-    float vertices[] = {
-        -1.0, -1.0, -1.0,   1.0, 0.0, 0.0, 1.0,
-         1.0, -1.0, -1.0,   1.0, 0.0, 0.0, 1.0,
-         1.0,  1.0, -1.0,   1.0, 0.0, 0.0, 1.0,
-        -1.0,  1.0, -1.0,   1.0, 0.0, 0.0, 1.0,
-
-        -1.0, -1.0,  1.0,   0.0, 1.0, 0.0, 1.0,
-         1.0, -1.0,  1.0,   0.0, 1.0, 0.0, 1.0,
-         1.0,  1.0,  1.0,   0.0, 1.0, 0.0, 1.0,
-        -1.0,  1.0,  1.0,   0.0, 1.0, 0.0, 1.0,
-
-        -1.0, -1.0, -1.0,   0.0, 0.0, 1.0, 1.0,
-        -1.0,  1.0, -1.0,   0.0, 0.0, 1.0, 1.0,
-        -1.0,  1.0,  1.0,   0.0, 0.0, 1.0, 1.0,
-        -1.0, -1.0,  1.0,   0.0, 0.0, 1.0, 1.0,
-
-        1.0, -1.0, -1.0,    1.0, 0.5, 0.0, 1.0,
-        1.0,  1.0, -1.0,    1.0, 0.5, 0.0, 1.0,
-        1.0,  1.0,  1.0,    1.0, 0.5, 0.0, 1.0,
-        1.0, -1.0,  1.0,    1.0, 0.5, 0.0, 1.0,
-
-        -1.0, -1.0, -1.0,   0.0, 0.5, 1.0, 1.0,
-        -1.0, -1.0,  1.0,   0.0, 0.5, 1.0, 1.0,
-         1.0, -1.0,  1.0,   0.0, 0.5, 1.0, 1.0,
-         1.0, -1.0, -1.0,   0.0, 0.5, 1.0, 1.0,
-
-        -1.0,  1.0, -1.0,   1.0, 0.0, 0.5, 1.0,
-        -1.0,  1.0,  1.0,   1.0, 0.0, 0.5, 1.0,
-         1.0,  1.0,  1.0,   1.0, 0.0, 0.5, 1.0,
-         1.0,  1.0, -1.0,   1.0, 0.0, 0.5, 1.0
-    };
-
-    uint16_t indices[] = {
-        0, 1, 2,  0, 2, 3,
-        6, 5, 4,  7, 6, 4,
-        8, 9, 10,  8, 10, 11,
-        14, 13, 12,  15, 14, 12,
-        16, 17, 18,  16, 18, 19,
-        22, 21, 20,  23, 22, 20
-    };
-
-    mesh->vertex_buffer = sg_make_buffer(&(sg_buffer_desc){
-        .data = SG_RANGE(vertices),
-        .label = "cube-vertices"
-    });
-
-    mesh->index_buffer = sg_make_buffer(&(sg_buffer_desc){
-        .type = SG_BUFFERTYPE_INDEXBUFFER,
-        .data = SG_RANGE(indices),
-        .label = "cube-indices"
-    });
-
-    mesh->vertex_count = 24;  // 6 faces * 2 triangles * 3 vertices
-    mesh->index_count = 36;
-    entity->mesh = mesh;
-    return mesh;
-}
-
-Entity* create_cube_entity(World *world, float x, float y, float z) {
-    Entity *entity = create_entity(world);
-    if (!entity) return NULL;
-
-    add_transform(world, entity, x, y, z);
-    add_cube_mesh(world, entity);
-    return entity;
-}
 
 Mesh* add_grid_mesh(World* world, Entity* entity) {
     const int GRID_SIZE = 20;
@@ -181,15 +54,6 @@ Mesh* add_grid_mesh(World* world, Entity* entity) {
         vertices[vertex_idx++] = color_intensity;
     }
 
-    printf("Grid vertex count: %d\n", vertex_idx / 6);
-printf("First line vertices:\n");
-for (int i = 0; i < 12; i += 6) {  // Print first two vertices (one line)
-    printf("v%d: pos(%.2f, %.2f, %.2f) color(%.2f, %.2f, %.2f)\n",
-        i/6,
-        vertices[i], vertices[i+1], vertices[i+2],
-        vertices[i+3], vertices[i+4], vertices[i+5]);
-}
-
     Mesh* mesh = &world->meshes[entity->id];
     mesh->vertex_buffer = sg_make_buffer(&(sg_buffer_desc){
             .data = (sg_range) {
@@ -207,80 +71,60 @@ for (int i = 0; i < 12; i += 6) {  // Print first two vertices (one line)
     return mesh;
 }
 
-Entity* create_cube(World* world, float x, float y, float z) {
-    Entity* entity = create_entity(world);
-    add_transform(world, entity, x, y, z);
-    add_cube_mesh(world, entity);  // Your existing function
-    
-    // Add render handle
-    RenderHandle* render = &world->renders[entity->id];
-    render->type = PIPELINE_STANDARD;
-    entity->render = render;
-    
-    return entity;
-}
-
-Entity* create_grid(World* world) {
-    Entity* entity = create_entity(world);
-    add_transform(world, entity, 0, 0, 0);
-    add_grid_mesh(world, entity);  // Your existing function
-    
-    RenderHandle* render = &world->renders[entity->id];
-    render->type = PIPELINE_GRID;
-    entity->render = render;
-    
-    return entity;
-}
-
-
-void create_camera(World* world,
-                   float distance,
-                   float pitch,
-                   float yaw,
-                   float x,
-                   float y,
-                   float z,
-                   const char* name) {
-    // Check if we have room for another camera
-    if (world->camera_count >= 16) {
-        printf("Warning: Maximum number of cameras reached\n");
-        return;
-    }
-
-    Camera* new_cam = &world->cameras[world->camera_count];
-    
-    // Initialize camera properties
-    new_cam->distance = distance;
-    new_cam->pitch = pitch;
-    new_cam->yaw = yaw;
-    new_cam->position[0] = x;
-    new_cam->position[1] = y;
-    new_cam->position[2] = z;
-    new_cam->id = world->next_camera_id++;
-    strncpy(new_cam->name, name, 31);
-    new_cam->name[31] = '\0';  // Ensure null termination
-    
-    // Initialize default values
-    new_cam->center[0] = 0.0f;  // Looking at origin
-    new_cam->center[1] = 0.0f;
-    new_cam->center[2] = 0.0f;
-    new_cam->up[0] = 0.0f;     // Up vector
-    new_cam->up[1] = 1.0f;
-    new_cam->up[2] = 0.0f;
-
-    world->camera_count++;
-}
-
-Mesh* create_cube_mesh(World* world) {
-    if (world->mesh_count >= 1000) {
-        printf("Exceeded max mesh count\n");
+Mesh* create_quad_mesh(sg_image texture) {
+    Mesh* mesh = malloc(sizeof(Mesh));
+    if (!mesh) {
+        printf("Failed to allocate quad mesh\n");
         return NULL;
     }
 
-    Mesh* mesh = &world->meshes[world->mesh_count++];
+    float vertices[] = {
+        // positions         // UVs
+        -0.5f, -0.5f, 0.0f,   0.0f, 1.0f,
+        0.5f, -0.5f, 0.0f,   1.0f, 1.0f,
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f,
+        -0.5f,  0.5f, 0.0f,   0.0f, 0.0f,
+    };
 
-    // Define your cube's vertex and index data here
-    // For example:
+    uint16_t indices[] = {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    mesh->vertex_buffer = sg_make_buffer(&(sg_buffer_desc){
+        .data = SG_RANGE(vertices),
+        .label = "quad-vertices"
+    });
+
+    mesh->index_buffer = sg_make_buffer(&(sg_buffer_desc){
+        .type = SG_BUFFERTYPE_INDEXBUFFER,
+        .data = SG_RANGE(indices),
+        .label = "quad-indices"
+    });
+
+    mesh->bindings.vertex_buffers[0] = mesh->vertex_buffer;
+    mesh->bindings.index_buffer = mesh->index_buffer;
+    mesh->index_count = 6;
+
+    mesh->bindings.images[0] = texture;
+    mesh->bindings.samplers[0] = sg_make_sampler(&(sg_sampler_desc){
+        .min_filter = SG_FILTER_LINEAR,
+        .mag_filter = SG_FILTER_LINEAR,
+    });
+
+    return mesh;
+}
+
+
+
+Mesh* create_cube_mesh(void) {
+
+    Mesh* mesh = malloc(sizeof(Mesh));
+    if (!mesh) {
+        printf("Failed to allocated a mesh\n");
+        return NULL;
+    }
+
     float vertices[] = {
         // Positions          // Colors (RGBA)
         // Front face
@@ -329,13 +173,73 @@ Mesh* create_cube_mesh(World* world) {
     return mesh;
 }
 
-Material* create_cube_material(World* world) {
-    if (world->material_count >= 100) {
-        printf("Exceeded max material count\n");
+Material* create_textured_material(void) {
+    Material* material = malloc(sizeof(Material));
+    if (!material) {
+        printf("Failed to allocate material\n");
         return NULL;
     }
 
-    Material* material = &world->materials[world->material_count++];
+    char* vs_source = read_shader_file("src/shaders/texture_vs.metal");
+    char* fs_source = read_shader_file("src/shaders/texture_fs.metal");
+
+    material->shader = sg_make_shader(&(sg_shader_desc){
+        .uniform_blocks[0] = {
+            .stage = SG_SHADERSTAGE_VERTEX,
+            .size = sizeof(vs_params_t),
+            .msl_buffer_n = 0,
+        },
+        .images[0] = {
+            .stage = SG_SHADERSTAGE_FRAGMENT,
+            .msl_texture_n = 0
+        },
+        .samplers[0] = {
+            .stage = SG_SHADERSTAGE_FRAGMENT,
+            .msl_sampler_n = 0
+        },
+        .image_sampler_pairs[0] = {
+            .stage = SG_SHADERSTAGE_FRAGMENT,
+            .image_slot = 0,
+            .sampler_slot = 0
+        },
+        .vertex_func = {
+            .entry = "vs_main",
+            .source = vs_source
+        },
+        .fragment_func = {
+            .entry = "fs_main",
+            .source = fs_source
+        },
+        //.label = "texture2d-shader"
+    });
+
+    material->pipeline = sg_make_pipeline(&(sg_pipeline_desc){
+        .shader = material->shader,
+        .layout = {
+            .buffers[0].stride = sizeof(float)*5, // 3 floats for pos, 2 for uv
+            .attrs = {
+                [0] = { .format = SG_VERTEXFORMAT_FLOAT3, .offset = 0 },
+                [1] = { .format = SG_VERTEXFORMAT_FLOAT2, .offset = sizeof(float)*3 },
+            }
+        },
+        .index_type = SG_INDEXTYPE_UINT16,
+        .depth = {
+            .compare = SG_COMPAREFUNC_LESS_EQUAL,
+            .write_enabled = true
+        },
+        .label = "textured-quad-pipeline"
+    });
+
+    return material;
+}
+
+Material* create_cube_material(void) {
+
+    Material* material = malloc(sizeof(Material));
+    if (!material) {
+        printf("Failed to allocated material\n");
+        return NULL;
+    }
 
     // Load the shaders (vertex and fragment shaders for the cube)
     char* vs_source = read_shader_file("src/shaders/cube_vs.metal");
@@ -376,70 +280,132 @@ Material* create_cube_material(World* world) {
     return material;
 }
 
-bool add_entity_to_world(World* world, Entity* entity) {
-    if (world->entity_count >= 1000) {
-        fprintf(stderr, "World entity limit reached\n");
-        return false;
+void destroy_mesh(Mesh* mesh) {
+    if (mesh) {
+        sg_destroy_buffer(mesh->vertex_buffer);
+        sg_destroy_buffer(mesh->index_buffer);
+        free(mesh);
     }
-
-    // Assign a unique ID to the entity
-    entity->id = world->next_entity_id++;
-
-    // Copy the entity into the world's entity array
-    world->entities[world->entity_count] = *entity;
-    Entity* world_entity = &world->entities[world->entity_count];
-
-    // Handle the Transform component
-    if (entity->transform) {
-        // Copy the transform into the world's transform pool
-        world->transforms[world->entity_count] = *(entity->transform);
-        // Update the entity's transform pointer to point to the world's pool
-        world_entity->transform = &world->transforms[world->entity_count];
-    } else {
-        world_entity->transform = NULL;
-    }
-
-    // Handle the Renderable component
-    if (entity->renderable) {
-        // Copy the renderable into the world's renderables pool
-        world->renderables[world->entity_count] = *(entity->renderable);
-        // Update the entity's renderable pointer to point to the world's pool
-        world_entity->renderable = &world->renderables[world->entity_count];
-    } else {
-        world_entity->renderable = NULL;
-    }
-
-    // Increment the entity count
-    world->entity_count++;
-
-    return true;
 }
 
-Entity* create_cube_new(World* world, float x, float y, float z) {
+void destroy_material(Material* material) {
+    if (material) {
+        sg_destroy_shader(material->shader);
+        sg_destroy_pipeline(material->pipeline);
+        free(material);
+    }
+}
+
+
+
+Entity* create_entity(World *world) {
     if (world->entity_count >= 1000) {
         printf("Exceeded max entity count\n");
         return NULL;
     }
-
-    // Get an Entity from the world array
-    Entity* entity = &world->entities[world->entity_count++];
-
-    // Assign an id to the entity
+   
+    Entity* entity = &world->entities[world->entity_count];
     entity->id = world->next_entity_id++;
 
-    // Allocate a Transform from the world's transform pool
-    if (world->transform_count >= 1000) {
-        printf("Exceeded max transform count\n");
+    entity->transform = (Transform){0};
+    entity->transform.scale[0] = 1.0f;
+    entity->transform.scale[1] = 1.0f;
+    entity->transform.scale[2] = 1.0f;
+    
+    entity->mesh = NULL;
+    entity->renderable = NULL;
+
+    world->entity_count++;
+    return entity;
+};
+
+// TODO: test this
+void destroy_entity(World *world, Entity *entity) {
+    // Find the index of the entity in the array
+    size_t index = entity - world->entities;
+    
+    // Validate index
+    if (index >= world->entity_count) {
+        printf("Invalid entity pointer\n");
+        return;
+    }
+
+    // Move the last entity into this slot (if it's not already the last one)
+    if (index < world->entity_count - 1) {
+        // Copy the last entity to this position
+        world->entities[index] = world->entities[world->entity_count - 1];
+        
+        // If you have systems referencing entities by pointer, you'll need to
+        // update those references to point to the new location
+        // This is one reason some people prefer using indices or IDs instead of pointers
+    }
+
+    // Decrease the count
+    world->entity_count--;
+}
+
+Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
+    Entity* entity = create_entity(world);
+    if (!entity) return NULL;
+
+    // Set transform
+    entity->transform.position[0] = pos[0];
+    entity->transform.position[1] = pos[1];
+    entity->transform.position[2] = pos[2];
+    
+    entity->transform.scale[0] = scale[0];
+    entity->transform.scale[1] = scale[1];
+    entity->transform.scale[2] = scale[2];
+
+    int img_width, img_height, img_channels;
+    unsigned char* img_data = stbi_load(image_path, &img_width, &img_height, &img_channels, 4);
+    if (!img_data) {
+        printf("Failed to load image: %s\n", image_path);
         return NULL;
     }
-    Transform* transform = &world->transforms[world->transform_count++];
-    transform->position[0] = x;
-    transform->position[1] = y;
-    transform->position[2] = z;
-    transform->scale[0] = transform->scale[1] = transform->scale[2] = 5.0f;
-    entity->transform = transform;
 
-    // Allocate a Renderable from the world's renderable pool
+    // Create texture
+    sg_image texture = sg_make_image(&(sg_image_desc){
+        .width = img_width,
+        .height = img_height,
+        .pixel_format = SG_PIXELFORMAT_RGBA8,
+        .data.subimage[0][0] = { 
+            .ptr = img_data, 
+            .size = (size_t)(img_width * img_height * 4) 
+        }
+    });
+
+    stbi_image_free(img_data);
+
+    // Create renderable
+    if (world->renderable_count >= 1000) {
+        printf("Exceeded max renderable count\n");
+        return NULL;
+    }
+    
+    Renderable* renderable = &world->renderables[world->renderable_count++];
+    entity->renderable = renderable;
+
+    // Set up mesh and material
+    renderable->mesh = create_quad_mesh(texture);
+    renderable->material = create_textured_material();
+
+    return entity;
+}
+
+Entity* create_cube(World* world, vec3 pos, vec3 scale) {
+    
+    Entity* entity = create_entity(world);
+    if (!entity) return NULL;
+
+    entity->transform.position[0] = pos[0];
+    entity->transform.position[1] = pos[1];
+    entity->transform.position[2] = pos[2];
+    
+    entity->transform.scale[0] = scale[0];
+    entity->transform.scale[1] = scale[1];
+    entity->transform.scale[2] = scale[2];  
+
     if (world->renderable_count >= 1000) {
         printf("Exceeded max renderable count\n");
         return NULL;
@@ -448,8 +414,8 @@ Entity* create_cube_new(World* world, float x, float y, float z) {
     entity->renderable = renderable;
 
     // Set up the mesh and material
-    renderable->mesh = create_cube_mesh(world); // We'll modify this function next
-    renderable->material = create_cube_material(world); // We'll modify this function next
+    renderable->mesh = create_cube_mesh();
+    renderable->material = create_cube_material();
 
     return entity;
 }
@@ -473,15 +439,14 @@ void compute_model_matrix(Transform* transform, mat4x4 out_matrix) {
     mat4x4_scale_aniso(out_matrix, out_matrix, transform->scale[0], transform->scale[1], transform->scale[2]);
 }
 
-// Function to render all entities in the world
 void render_entities(World* world, mat4x4 view, mat4x4 proj) {
     for (uint32_t i = 0; i < world->entity_count; ++i) {
         Entity* entity = &world->entities[i];
 
-        if (entity->transform && entity->renderable) {
+        if (entity->renderable) {
             // Compute the model matrix from the Transform component
             mat4x4 model_matrix;
-            compute_model_matrix(entity->transform, model_matrix);
+            compute_model_matrix(&entity->transform, model_matrix);
 
             // Compute the MVP matrix
             mat4x4 mvp_matrix;
