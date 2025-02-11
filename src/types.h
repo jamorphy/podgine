@@ -45,6 +45,7 @@ typedef struct Entity {
 
 typedef struct {
     uint32_t id;
+    vec3 front;
     vec3 eye;
     vec3 position;
     vec3 center;

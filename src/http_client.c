@@ -205,18 +205,18 @@ void example_usage(void) {
     http_client_cleanup(client);
 }
 
-int main() {
-    HttpClient* client = http_client_init();
-    if (!client) {
-        fprintf(stderr, "Failed to initialize HTTP client\n");
-        return 1;
-    }
+/* int main() { */
+/*     HttpClient* client = http_client_init(); */
+/*     if (!client) { */
+/*         fprintf(stderr, "Failed to initialize HTTP client\n"); */
+/*         return 1; */
+/*     } */
 
-    HttpResponse* response = http_client_test_request(client);
-    if (response) {
-        http_response_free(response);
-    }
+/*     HttpResponse* response = http_client_test_request(client); */
+/*     if (response) { */
+/*         http_response_free(response); */
+/*     } */
 
-    http_client_cleanup(client);
-    return 0;
-}
+/*     http_client_cleanup(client); */
+/*     return 0; */
+/* } */

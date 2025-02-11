@@ -32,8 +32,6 @@ void draw_nuklear_gui(World* world) {
         nk_label(nk_ctx, "Camera Position:", NK_TEXT_LEFT);
     
         char buffer[64];
-        snprintf(buffer, sizeof(buffer), "Distance: %.2f", world->camera.distance);
-        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
     
         snprintf(buffer, sizeof(buffer), "Pitch: %.2f°", world->camera.pitch);
         nk_label(nk_ctx, buffer, NK_TEXT_LEFT);

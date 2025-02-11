@@ -5,48 +5,51 @@
 void update_camera_frame(World* world) {
     float move_speed = 0.5f;
     
-    // Calculate normalized yaw first
-    float normalized_yaw = fmodf(world->camera.yaw, 360.0f);
-    if (normalized_yaw < 0) normalized_yaw += 360.0f;
-
     float pitch_rad = TO_RAD(world->camera.pitch);
-    float yaw_rad = TO_RAD(normalized_yaw);
+    float yaw_rad = TO_RAD(world->camera.yaw);
 
-    // WASD movement calculations
+    // Calculate forward and right vectors for movement
     vec3 forward = {
-        sinf(yaw_rad),
-        0,
-        cosf(yaw_rad)
+        cosf(pitch_rad) * sinf(yaw_rad),   // x
+        0,                                  // y (keeping movement horizontal)
+        cosf(pitch_rad) * cosf(yaw_rad)    // z
     };
-    
+
     vec3 right = {
-        cosf(yaw_rad),
-        0,
-        -sinf(yaw_rad)
+        cosf(yaw_rad),    // x
+        0,                // y
+        -sinf(yaw_rad)    // z
     };
 
     // Update position based on key states
     if (world->control.key_w) {
-        world->camera.position[0] += -forward[0] * move_speed;
-        world->camera.position[2] += -forward[2] * move_speed;
+        world->camera.position[0] += forward[0] * move_speed;
+        world->camera.position[2] += forward[2] * move_speed;
     }
     if (world->control.key_s) {
-        world->camera.position[0] -= -forward[0] * move_speed;
-        world->camera.position[2] -= -forward[2] * move_speed;
+        world->camera.position[0] -= forward[0] * move_speed;
+        world->camera.position[2] -= forward[2] * move_speed;
     }
     if (world->control.key_a) {
-        world->camera.position[0] -= right[0] * move_speed;
-        world->camera.position[2] -= right[2] * move_speed;
+        world->camera.position[0] -= -right[0] * move_speed;
+        world->camera.position[2] -= -right[2] * move_speed;
     }
     if (world->control.key_d) {
-        world->camera.position[0] += right[0] * move_speed;
-        world->camera.position[2] += right[2] * move_speed;
+        world->camera.position[0] += -right[0] * move_speed;
+        world->camera.position[2] += -right[2] * move_speed;
     }
 
-    // Calculate final camera position
-    world->camera.eye[0] = world->camera.position[0] + world->camera.distance * cosf(pitch_rad) * sinf(yaw_rad);
-    world->camera.eye[1] = world->camera.position[1] + world->camera.distance * sinf(pitch_rad);
-    world->camera.eye[2] = world->camera.position[2] + world->camera.distance * cosf(pitch_rad) * cosf(yaw_rad);
+    // Calculate target for view matrix
+    vec3 target;
+    target[0] = world->camera.position[0] + cosf(pitch_rad) * sinf(yaw_rad);
+    target[1] = world->camera.position[1] + sinf(pitch_rad);
+    target[2] = world->camera.position[2] + cosf(pitch_rad) * cosf(yaw_rad);
+
+    // Update view matrix
+    mat4x4_look_at(world->camera.view, 
+                   world->camera.position,
+                   target,
+                   (vec3){0.0f, 1.0f, 0.0f});
 }
 
 void create_camera(World* world,
