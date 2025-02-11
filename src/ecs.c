@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../libs/sokol/stb_image.h"
+#include "../libs/stb_image.h"
 
 #define COMPONENTS_PER_VERTEX 7 // 3 pos floats + 4 color floats
 

@@ -1,0 +1,12 @@
+[submodule "libs/libs/linmath"]
+	path = libs/libs/linmath
+	url = https://github.com/datenwolf/linmath.h.git
+[submodule "libs/linmath"]
+	path = libs/linmath
+	url = https://github.com/datenwolf/linmath.h.git
+[submodule "libs/sokol"]
+	path = libs/sokol
+	url = https://github.com/floooh/sokol.git
+[submodule "libs/nuklear"]
+	path = libs/nuklear
+	url = https://github.com/Immediate-Mode-UI/Nuklear.git

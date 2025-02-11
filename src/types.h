@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "../libs/sokol/sokol_gfx.h"
 #include "../libs/sokol/sokol_glue.h"
-#include "../libs/sokol/linmath.h"
+#include "../libs/linmath/linmath.h"
 
 typedef struct {
     mat4x4 mvp;

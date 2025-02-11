@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -std=c11 -O2 -Wall -Wextra
 OBJC_FLAGS = -fobjc-arc
-INCLUDES = -I$(CURDIR)/libs/sokol -I$(CURDIR)/libs/nuklear
+INCLUDES = -I$(CURDIR)/libs/sokol -I$(CURDIR)/libs/nuklear -I$(CURDIR)/libs/linmath
 FRAMEWORKS = -framework Metal -framework MetalKit -framework Cocoa -framework AudioToolbox -framework QuartzCore
 
 SRCS = src/main.c src/ecs.c src/camera.c src/gui.c libs/sokol/sokol.m

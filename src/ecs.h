@@ -2,7 +2,7 @@
 
 #include "../libs/sokol/sokol_gfx.h"
 #include "../libs/sokol/sokol_glue.h"
-#include "../libs/sokol/linmath.h"
+#include "../libs/linmath/linmath.h"
 #include <stdint.h>
 
 #include "types.h"
@@ -11,8 +11,6 @@ Entity* create_entity(World* world);
 void destroy_entity(World* world, Entity* entity);
 void destroy_mesh(Mesh* mesh);
 void destroy_material(Material* material);
-
-
 
 // move these some where else
 #define EDITOR_CAMERA_INDEX 0
