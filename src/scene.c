@@ -1,50 +1,31 @@
+#include "../libs/cJSON/cJSON.h"
+
+#include <stdlib.h>
 #include "scene.h"
 #include "ecs.h"
 #include "constants.h"
 
 void clear_scene(World* world) {
-    printf("Starting scene clear...\n");
-    
-    // Store editor camera temporarily
     Camera editor_camera = world->cameras[0];
-    printf("Stored editor camera (id: %d)\n", editor_camera.id);
-    
-    // Log initial state
-    printf("Initial entity count: %d\n", world->entity_count);
-    printf("Initial camera count: %d\n", world->camera_count);
     
     // Destroy all entities
     while (world->entity_count > 0) {
         uint32_t current_index = world->entity_count - 1;
         Entity* entity_to_destroy = &world->entities[current_index];
-        printf("Destroying entity at index %d\n", current_index);
-        
-        if (entity_to_destroy->renderable->mesh) {
-            printf("- Has mesh\n");
-        }
-        if (entity_to_destroy->renderable) {
-            printf("- Has renderable\n");
-            if (entity_to_destroy->renderable->material) {
-                printf("- Has material\n");
-            }
-        }
         
         destroy_entity(world, entity_to_destroy);
-        printf("Entity destroyed. New entity count: %d\n", world->entity_count);
     }
+
+    world->renderable_count = 0;
     
-    // Reset entity-related counters
     world->next_entity_id = 1;
     
-    // Reset camera-related counters, preserving editor camera
-    printf("Resetting cameras (keeping editor camera)...\n");
     world->camera_count = 1;
     world->next_camera_id = 1;
     
     // Explicitly reset non-editor cameras
     for (int i = 1; i < MAX_CAMERAS; i++) {
         Camera* cam = &world->cameras[i];
-        printf("Resetting camera at index %d\n", i);
         cam->id = 0;
         // TODO: make this a vec3
         cam->position[0] = 0.0;
@@ -59,8 +40,120 @@ void clear_scene(World* world) {
     // Restore editor camera
     world->cameras[0] = editor_camera;
     world->camera = editor_camera;
+}
+
+bool load_scene(World* world, const char* filename) {
+    // Build full path
+    char filepath[256];
+    snprintf(filepath, sizeof(filepath), "scenes/%s", filename);
     
-    printf("Scene clear completed.\n");
-    printf("Final entity count: %d\n", world->entity_count);
-    printf("Final camera count: %d\n", world->camera_count);
+    // Open file
+    FILE* file = fopen(filepath, "rb");
+    if (!file) {
+        fprintf(stderr, "Failed to open scene file: %s\n", filepath);
+        return false;
+    }
+    
+    // Get file size
+    fseek(file, 0, SEEK_END);
+    long file_size_long = ftell(file);
+    if (file_size_long < 0) {
+        fprintf(stderr, "Error getting file size\n");
+        fclose(file);
+        return false;
+    }
+    size_t file_size = (size_t)file_size_long;
+    fseek(file, 0, SEEK_SET);
+    
+    // Allocate buffer and read file
+    char* json_buffer = (char*)malloc(file_size + 1);
+    if (!json_buffer) {
+        fprintf(stderr, "Failed to allocate memory for scene file\n");
+        fclose(file);
+        return false;
+    }
+    
+    size_t read_size = fread(json_buffer, 1, file_size, file);
+    fclose(file);
+    
+    if (read_size != file_size) {
+        fprintf(stderr, "Failed to read entire scene file\n");
+        free(json_buffer);
+        return false;
+    }
+    
+    json_buffer[file_size] = '\0';  // Null terminate the string
+    
+    // Parse JSON
+    cJSON* root = cJSON_Parse(json_buffer);
+    free(json_buffer);  // We can free this now as cJSON has its own copy
+    
+    if (!root) {
+        const char* error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr) {
+            fprintf(stderr, "JSON Parse Error before: %s\n", error_ptr);
+        }
+        return false;
+    }
+    
+    // Version check
+    cJSON* version = cJSON_GetObjectItem(root, "scene_version");
+    if (!version || !cJSON_IsNumber(version) || version->valueint != 1) {
+        fprintf(stderr, "Invalid or unsupported scene version\n");
+        cJSON_Delete(root);
+        return false;
+    }
+    
+    // Clear existing scene
+    clear_scene(world);
+    
+    // TODO: Load entities and cameras
+    cJSON* entities = cJSON_GetObjectItem(root, "entities");
+    if (!entities || !cJSON_IsArray(entities)) {
+        fprintf(stderr, "Scene file missing entities array or invalid format\n");
+        cJSON_Delete(root);
+        return false;
+    }
+
+    int entity_count = cJSON_GetArraySize(entities);
+    for (int i = 0; i < entity_count; i++) {
+        cJSON* entity_json = cJSON_GetArrayItem(entities, i);
+        cJSON* components = cJSON_GetObjectItem(entity_json, "components");
+        if (!components) continue;
+
+        // Get transform data
+        cJSON* transform = cJSON_GetObjectItem(components, "transform");
+        if (!transform) continue;
+
+        // Parse position
+        vec3 position = {0, 0, 0};
+        cJSON* pos_array = cJSON_GetObjectItem(transform, "position");
+        if (pos_array && cJSON_IsArray(pos_array)) {
+            position[0] = (float)cJSON_GetArrayItem(pos_array, 0)->valuedouble;
+            position[1] = (float)cJSON_GetArrayItem(pos_array, 1)->valuedouble;
+            position[2] = (float)cJSON_GetArrayItem(pos_array, 2)->valuedouble;
+        }
+
+        // Parse scale
+        vec3 scale = {1, 1, 1};
+        cJSON* scale_array = cJSON_GetObjectItem(transform, "scale");
+        if (scale_array && cJSON_IsArray(scale_array)) {
+            scale[0] = (float)cJSON_GetArrayItem(scale_array, 0)->valuedouble;
+            scale[1] = (float)cJSON_GetArrayItem(scale_array, 1)->valuedouble;
+            scale[2] = (float)cJSON_GetArrayItem(scale_array, 2)->valuedouble;
+        }
+
+        // Create the cube entity
+        Entity* entity = create_cube(world, position, scale);
+        if (!entity) {
+            fprintf(stderr, "Failed to create cube entity\n");
+            cJSON_Delete(root);
+            return false;
+        }
+    }
+    
+    // Cleanup
+    cJSON_Delete(root);
+    
+    return true;
 }

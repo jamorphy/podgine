@@ -288,11 +288,12 @@ void init_camera_visualization(World* world)  {
     world->materials[world->material_count] = *camera_material;
     free(camera_material);  // Free the allocated material after copying
     
-    // Create a renderable for the camera visualization
-    world->renderables[world->renderable_count].material = &world->materials[world->material_count];
-    world->renderables[world->renderable_count].mesh = create_cube_mesh();  // Assuming you have this
+    // Initialize the dedicated camera visualization renderable
+    world->camera_visualization_renderable.material = &world->materials[world->material_count];
+    world->camera_visualization_renderable.mesh = create_cube_mesh();
+    
     world->material_count++;
-    world->renderable_count++;
+    // Note: we no longer increment renderable_count since we're not using the global array
 }
 
 
@@ -336,88 +337,30 @@ Entity* create_entity(World *world) {
 };
 
 void destroy_entity(World *world, Entity *entity) {
-    printf("\nDestroy Entity Start:\n");
-    
-    // Find the index of the entity in the array
     size_t index = entity - world->entities;
-    printf("- Calculated index: %zu\n", index);
 
     // Validate index
     if (index >= world->entity_count) {
-        printf("ERROR: Invalid entity pointer (index %zu >= count %d)\n", 
+        printf("ERROR: Invalid entity pointer (index %zu >= count %d)\n",
                index, world->entity_count);
         return;
     }
 
-    printf("- Entity found at index %zu\n", index);
-    printf("- Renderable pointer: %p\n", (void*)entity->renderable);
-
-    // Clean up all resources associated with this entity
+    // Clean up renderable reference
     if (entity->renderable) {
-        printf("- Cleaning up renderable resources:\n");
-        
-        if (entity->renderable->mesh) {
-            printf("  - Destroying mesh at %p\n", (void*)entity->renderable->mesh);
-            destroy_mesh(entity->renderable->mesh);
-        } else {
-            printf("  - No mesh to destroy\n");
-        }
-        
-        if (entity->renderable->material) {
-            printf("  - Destroying material at %p\n", (void*)entity->renderable->material);
-            destroy_material(entity->renderable->material);
-        } else {
-            printf("  - No material to destroy\n");
-        }
-        
+        // Instead of destroying mesh/material directly,
+        // we might want to reference count or handle shared resources differently
         entity->renderable = NULL;
-    } else {
-        printf("- No renderable to clean up\n");
     }
 
     // Move the last entity into this slot (if it's not already the last one)
     if (index < world->entity_count - 1) {
-        printf("- Moving last entity to index %zu\n", index);
         world->entities[index] = world->entities[world->entity_count - 1];
-    } else {
-        printf("- Last entity, no need to move\n");
     }
 
     // Decrease the count
     world->entity_count--;
-    printf("- New entity count: %d\n", world->entity_count);
-    printf("Destroy Entity Complete\n\n");
 }
-
-/* void destroy_entity(World *world, Entity *entity) { */
-/*     // Find the index of the entity in the array */
-/*     size_t index = entity - world->entities; */
-
-/*     // Validate index */
-/*     if (index >= world->entity_count) { */
-/*         printf("Invalid entity pointer\n"); */
-/*         return; */
-/*     } */
-
-/*     // Clean up all resources associated with this entity */
-/*     if (entity->renderable->mesh) { */
-/*         destroy_mesh(entity->renderable->mesh); */
-/*     } */
-/*     if (entity->renderable->material) { */
-/*         destroy_material(entity->renderable->material); */
-/*     } */
-/*     free(entity->renderable); */
-    
-/*     entity->renderable = NULL; */
-
-/*     // Move the last entity into this slot (if it's not already the last one) */
-/*     if (index < world->entity_count - 1) { */
-/*         world->entities[index] = world->entities[world->entity_count - 1]; */
-/*     } */
-
-/*     // Decrease the count */
-/*     world->entity_count--; */
-/* } */
 
 Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
     Entity* entity = create_entity(world);
@@ -471,6 +414,7 @@ Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
 
     return entity;
 }
+
 
 Entity* create_cube(World* world, vec3 pos, vec3 scale) {
 
@@ -589,7 +533,7 @@ void render_cameras(World* world, mat4x4 view, mat4x4 proj) {
         mat4x4_mul(mvp_matrix, proj, view);
         mat4x4_mul(mvp_matrix, mvp_matrix, model_matrix);
 
-        Renderable* camera_renderable = &world->renderables[world->renderable_count - 1];
+        Renderable* camera_renderable = &world->camera_visualization_renderable;
         
         sg_apply_pipeline(camera_renderable->material->pipeline);
         sg_apply_bindings(&camera_renderable->mesh->bindings);

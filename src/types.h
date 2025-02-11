@@ -78,7 +78,7 @@ typedef struct World {
     
     // maybe move camera stuff to another struct
     Camera cameras[MAX_CAMERAS];
-    Mesh camera_mesh;
+    //Mesh camera_mesh;
     sg_pipeline camera_visualization_pipeline;
     int camera_count;
     uint32_t next_camera_id;
@@ -88,7 +88,9 @@ typedef struct World {
     // maybe move state to another struct too
     bool in_edit_mode;
     
-    sg_pipeline pipelines[1000];
+    //sg_pipeline pipelines[1000];
+
+    Renderable camera_visualization_renderable;
 
     Renderable renderables[1000];
     uint32_t renderable_count;
