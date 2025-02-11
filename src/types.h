@@ -79,7 +79,7 @@ typedef struct World {
     // maybe move camera stuff to another struct
     Camera cameras[MAX_CAMERAS];
     //Mesh camera_mesh;
-    sg_pipeline camera_visualization_pipeline;
+    //sg_pipeline camera_visualization_pipeline;
     int camera_count;
     uint32_t next_camera_id;
     Camera camera;
