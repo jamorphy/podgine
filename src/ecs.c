@@ -505,11 +505,6 @@ Mesh create_camera_mesh(void) {
 void render_cameras(World* world, mat4x4 view, mat4x4 proj) {
     for (int i = 0; i < world->camera_count; i++) {
         Camera* camera = &world->cameras[i];
-        
-        printf("Rendering camera '%s':\n", camera->name);
-        printf("  Position: (%f, %f, %f)\n", 
-               camera->position[0], camera->position[1], camera->position[2]);
-        printf("  Pitch: %f, Yaw: %f\n", camera->pitch, camera->yaw);
 
         // Start with identity
         mat4x4 model_matrix;

@@ -39,8 +39,6 @@ void init(void)
     create_img(&world, "assets/kermit.jpg", (vec3) {0.0f, -5.0f, 0.0f}, (vec3) {75.0f, 75.0f, 75.0f});
     create_img(&world, "assets/farm.jpg", (vec3) {-113.0f, 0.0f, 124.0f}, (vec3) {75.0f, 75.0f, 75.0f});
 
-
-
     // DEFAULT EDITOR CAM
     create_camera(&world, -1.27f, 8.0f, -52.0f, 8.0f, -177.0f, "default cam");
     
@@ -124,56 +122,15 @@ void frame(void)
     const float w = sapp_widthf();
     const float h = sapp_heightf();
 
-    float normalized_yaw = fmodf(world.camera.yaw, 360.0f);
-    if (normalized_yaw < 0) normalized_yaw += 360.0f;
 
-    float pitch_rad = TO_RAD(world.camera.pitch);
-    float yaw_rad = TO_RAD(normalized_yaw);
-
-    // WASD movement calculations
-    float move_speed = 0.5f;
-    vec3 forward = {
-        sinf(yaw_rad),
-        0,
-        cosf(yaw_rad)
-    };
-    
-    vec3 right = {
-        cosf(yaw_rad),
-        0,
-        -sinf(yaw_rad)
-    };
-
-    // Update position based on key states
-    if (world.control.key_w) {
-        world.camera.position[0] += -forward[0] * move_speed;
-        world.camera.position[2] += -forward[2] * move_speed;
-    }
-    if (world.control.key_s) {
-        world.camera.position[0] -= -forward[0] * move_speed;
-        world.camera.position[2] -= -forward[2] * move_speed;
-    }
-    if (world.control.key_a) {
-        world.camera.position[0] -= right[0] * move_speed;
-        world.camera.position[2] -= right[2] * move_speed;
-    }
-    if (world.control.key_d) {
-        world.camera.position[0] += right[0] * move_speed;
-        world.camera.position[2] += right[2] * move_speed;
-    }
-
-    float cam_x = world.camera.position[0] + world.camera.distance * cosf(pitch_rad) * sinf(yaw_rad);
-    float cam_y = world.camera.position[1] + world.camera.distance * sinf(pitch_rad);
-    float cam_z = world.camera.position[2] + world.camera.distance * cosf(pitch_rad) * cosf(yaw_rad);
+    update_camera_frame(&world);
 
     mat4x4 proj;
     mat4x4 view;
     mat4x4_perspective(proj, TO_RAD(60.0f), w/h, 0.1f, 500.0f);
-    
-    vec3 eye = {cam_x, cam_y, cam_z};
-    vec3 center = {world.camera.position[0], world.camera.position[1], world.camera.position[2]};
+
     vec3 up = {0.0f, 1.0f, 0.0f};
-    mat4x4_look_at(view, eye, center, up);
+    mat4x4_look_at(view, world.camera.eye, world.camera.position, up);
 
     sg_begin_pass(&(sg_pass){
             .action = {
