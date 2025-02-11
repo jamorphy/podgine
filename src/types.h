@@ -4,6 +4,7 @@
 #include "../libs/sokol/sokol_gfx.h"
 #include "../libs/sokol/sokol_glue.h"
 #include "../libs/linmath/linmath.h"
+#include "constants.h"
 
 typedef struct {
     mat4x4 mvp;
@@ -35,11 +36,7 @@ typedef struct {
 
 typedef struct Entity {
     uint32_t id;
-    
     Transform transform;
-
-    // component pools
-    Mesh* mesh;
     Renderable* renderable;
 } Entity;
 
@@ -80,7 +77,7 @@ typedef struct World {
     uint32_t material_count;
     
     // maybe move camera stuff to another struct
-    Camera cameras[100];
+    Camera cameras[MAX_CAMERAS];
     Mesh camera_mesh;
     sg_pipeline camera_visualization_pipeline;
     int camera_count;

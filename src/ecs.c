@@ -8,68 +8,68 @@
 
 #define COMPONENTS_PER_VERTEX 7 // 3 pos floats + 4 color floats
 
-Mesh* add_grid_mesh(World* world, Entity* entity) {
-    const int GRID_SIZE = 20;
-    const float GRID_SPACE = 2.0f;
-    const int LINES_PER_DIR = (GRID_SIZE * 2 + 1);
-    const int VERTS_PER_LINE = 2;
-    const int TOTAL_LINES = LINES_PER_DIR * 2;
-    const int VERTEX_COUNT = TOTAL_LINES * VERTS_PER_LINE;
+/* Mesh* add_grid_mesh(World* world, Entity* entity) { */
+/*     const int GRID_SIZE = 20; */
+/*     const float GRID_SPACE = 2.0f; */
+/*     const int LINES_PER_DIR = (GRID_SIZE * 2 + 1); */
+/*     const int VERTS_PER_LINE = 2; */
+/*     const int TOTAL_LINES = LINES_PER_DIR * 2; */
+/*     const int VERTEX_COUNT = TOTAL_LINES * VERTS_PER_LINE; */
 
-    float* vertices = (float*)malloc(VERTEX_COUNT * 6 * sizeof(float));
-    int vertex_idx = 0;
+/*     float* vertices = (float*)malloc(VERTEX_COUNT * 6 * sizeof(float)); */
+/*     int vertex_idx = 0; */
 
-    // Create grid lines
-    for (int i = -GRID_SIZE; i <= GRID_SIZE; i++) {
-        float color_intensity = 1.0f;
+/*     // Create grid lines */
+/*     for (int i = -GRID_SIZE; i <= GRID_SIZE; i++) { */
+/*         float color_intensity = 1.0f; */
 
-        // Lines along X axis
-        vertices[vertex_idx++] = i * GRID_SPACE;
-        vertices[vertex_idx++] = -0.01f;
-        vertices[vertex_idx++] = -GRID_SIZE * GRID_SPACE;
-        vertices[vertex_idx++] = color_intensity;
-        vertices[vertex_idx++] = color_intensity;
-        vertices[vertex_idx++] = color_intensity;
+/*         // Lines along X axis */
+/*         vertices[vertex_idx++] = i * GRID_SPACE; */
+/*         vertices[vertex_idx++] = -0.01f; */
+/*         vertices[vertex_idx++] = -GRID_SIZE * GRID_SPACE; */
+/*         vertices[vertex_idx++] = color_intensity; */
+/*         vertices[vertex_idx++] = color_intensity; */
+/*         vertices[vertex_idx++] = color_intensity; */
 
-        vertices[vertex_idx++] = i * GRID_SPACE;
-        vertices[vertex_idx++] = 0.0f;
-        vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE;
-        vertices[vertex_idx++] = color_intensity;
-        vertices[vertex_idx++] = color_intensity;
-        vertices[vertex_idx++] = color_intensity;
+/*         vertices[vertex_idx++] = i * GRID_SPACE; */
+/*         vertices[vertex_idx++] = 0.0f; */
+/*         vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE; */
+/*         vertices[vertex_idx++] = color_intensity; */
+/*         vertices[vertex_idx++] = color_intensity; */
+/*         vertices[vertex_idx++] = color_intensity; */
 
-        // Lines along Z axis
-        vertices[vertex_idx++] = -GRID_SIZE * GRID_SPACE;
-        vertices[vertex_idx++] = 0.0f;
-        vertices[vertex_idx++] = i * GRID_SPACE;
-        vertices[vertex_idx++] = color_intensity;
-        vertices[vertex_idx++] = color_intensity;
-        vertices[vertex_idx++] = color_intensity;
+/*         // Lines along Z axis */
+/*         vertices[vertex_idx++] = -GRID_SIZE * GRID_SPACE; */
+/*         vertices[vertex_idx++] = 0.0f; */
+/*         vertices[vertex_idx++] = i * GRID_SPACE; */
+/*         vertices[vertex_idx++] = color_intensity; */
+/*         vertices[vertex_idx++] = color_intensity; */
+/*         vertices[vertex_idx++] = color_intensity; */
 
-        vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE;
-        vertices[vertex_idx++] = 0.0f;
-        vertices[vertex_idx++] = i * GRID_SPACE;
-        vertices[vertex_idx++] = color_intensity;
-        vertices[vertex_idx++] = color_intensity;
-        vertices[vertex_idx++] = color_intensity;
-    }
+/*         vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE; */
+/*         vertices[vertex_idx++] = 0.0f; */
+/*         vertices[vertex_idx++] = i * GRID_SPACE; */
+/*         vertices[vertex_idx++] = color_intensity; */
+/*         vertices[vertex_idx++] = color_intensity; */
+/*         vertices[vertex_idx++] = color_intensity; */
+/*     } */
 
-    Mesh* mesh = &world->meshes[entity->id];
-    mesh->vertex_buffer = sg_make_buffer(&(sg_buffer_desc){
-            .data = (sg_range) {
-                .ptr = vertices,
-                .size = vertex_idx * sizeof(float)
-            },
-        .label = "grid-vertices"
-    });
-    mesh->vertex_count = vertex_idx / 6;
-    mesh->index_count = 0;
-    mesh->index_buffer.id = 0;
+/*     Mesh* mesh = &world->meshes[entity->id]; */
+/*     mesh->vertex_buffer = sg_make_buffer(&(sg_buffer_desc){ */
+/*             .data = (sg_range) { */
+/*                 .ptr = vertices, */
+/*                 .size = vertex_idx * sizeof(float) */
+/*             }, */
+/*         .label = "grid-vertices" */
+/*     }); */
+/*     mesh->vertex_count = vertex_idx / 6; */
+/*     mesh->index_count = 0; */
+/*     mesh->index_buffer.id = 0; */
 
-    free(vertices);
-    entity->mesh = mesh;
-    return mesh;
-}
+/*     free(vertices); */
+/*     entity->mesh = mesh; */
+/*     return mesh; */
+/* } */
 
 Mesh* create_quad_mesh(sg_image texture) {
     Mesh* mesh = malloc(sizeof(Mesh));
@@ -329,37 +329,95 @@ Entity* create_entity(World *world) {
     entity->transform.scale[1] = 1.0f;
     entity->transform.scale[2] = 1.0f;
 
-    entity->mesh = NULL;
     entity->renderable = NULL;
 
     world->entity_count++;
     return entity;
 };
 
-// TODO: test this
 void destroy_entity(World *world, Entity *entity) {
+    printf("\nDestroy Entity Start:\n");
+    
     // Find the index of the entity in the array
     size_t index = entity - world->entities;
+    printf("- Calculated index: %zu\n", index);
 
     // Validate index
     if (index >= world->entity_count) {
-        printf("Invalid entity pointer\n");
+        printf("ERROR: Invalid entity pointer (index %zu >= count %d)\n", 
+               index, world->entity_count);
         return;
+    }
+
+    printf("- Entity found at index %zu\n", index);
+    printf("- Renderable pointer: %p\n", (void*)entity->renderable);
+
+    // Clean up all resources associated with this entity
+    if (entity->renderable) {
+        printf("- Cleaning up renderable resources:\n");
+        
+        if (entity->renderable->mesh) {
+            printf("  - Destroying mesh at %p\n", (void*)entity->renderable->mesh);
+            destroy_mesh(entity->renderable->mesh);
+        } else {
+            printf("  - No mesh to destroy\n");
+        }
+        
+        if (entity->renderable->material) {
+            printf("  - Destroying material at %p\n", (void*)entity->renderable->material);
+            destroy_material(entity->renderable->material);
+        } else {
+            printf("  - No material to destroy\n");
+        }
+        
+        entity->renderable = NULL;
+    } else {
+        printf("- No renderable to clean up\n");
     }
 
     // Move the last entity into this slot (if it's not already the last one)
     if (index < world->entity_count - 1) {
-        // Copy the last entity to this position
+        printf("- Moving last entity to index %zu\n", index);
         world->entities[index] = world->entities[world->entity_count - 1];
-
-        // If you have systems referencing entities by pointer, you'll need to
-        // update those references to point to the new location
-        // This is one reason some people prefer using indices or IDs instead of pointers
+    } else {
+        printf("- Last entity, no need to move\n");
     }
 
     // Decrease the count
     world->entity_count--;
+    printf("- New entity count: %d\n", world->entity_count);
+    printf("Destroy Entity Complete\n\n");
 }
+
+/* void destroy_entity(World *world, Entity *entity) { */
+/*     // Find the index of the entity in the array */
+/*     size_t index = entity - world->entities; */
+
+/*     // Validate index */
+/*     if (index >= world->entity_count) { */
+/*         printf("Invalid entity pointer\n"); */
+/*         return; */
+/*     } */
+
+/*     // Clean up all resources associated with this entity */
+/*     if (entity->renderable->mesh) { */
+/*         destroy_mesh(entity->renderable->mesh); */
+/*     } */
+/*     if (entity->renderable->material) { */
+/*         destroy_material(entity->renderable->material); */
+/*     } */
+/*     free(entity->renderable); */
+    
+/*     entity->renderable = NULL; */
+
+/*     // Move the last entity into this slot (if it's not already the last one) */
+/*     if (index < world->entity_count - 1) { */
+/*         world->entities[index] = world->entities[world->entity_count - 1]; */
+/*     } */
+
+/*     // Decrease the count */
+/*     world->entity_count--; */
+/* } */
 
 Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
     Entity* entity = create_entity(world);

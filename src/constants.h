@@ -1,0 +1,2 @@
+#define EDITOR_CAMERA_INDEX 0
+#define MAX_CAMERAS 100

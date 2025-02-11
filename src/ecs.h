@@ -13,7 +13,6 @@ void destroy_mesh(Mesh* mesh);
 void destroy_material(Material* material);
 
 // move these some where else
-#define EDITOR_CAMERA_INDEX 0
 Mesh* create_cube_mesh(void);
 Mesh* create_quad_mesh(sg_image texture);
 Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale);
