@@ -1,5 +1,7 @@
 #pragma once
 
+typedef struct World World;
+
 struct state {
     float rx, ry;
     sg_pipeline pip;
@@ -18,4 +20,5 @@ struct state {
     sg_pipeline gizmo_pip;
     sg_bindings gizmo_bind;
     vec3 cube_position;
+    World* world;
 };

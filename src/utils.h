@@ -1,3 +1,8 @@
+#pragma once
+
+#include <stdio.h>
+#include <stdlib.h>
+
 char* read_shader_file(const char* filepath) {
     printf("Attempting to load shader: %s\n", filepath);
     FILE* file = fopen(filepath, "r");
