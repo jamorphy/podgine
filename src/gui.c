@@ -73,6 +73,11 @@ void draw_nuklear_gui(World* world) {
         }
 
         if (world->in_edit_mode) {
+            nk_layout_row_static(nk_ctx, 30, 180, 1);  // Adjust width (180) as needed
+            if (nk_button_label(nk_ctx, "Create Camera Here")) {
+                create_camera_at_current_position(world);
+            }
+            nk_layout_row_dynamic(nk_ctx, 20, 1);
             nk_label(nk_ctx, "<In Editor Mode>", NK_TEXT_CENTERED);
         }
     }

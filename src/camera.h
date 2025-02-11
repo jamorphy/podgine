@@ -15,3 +15,4 @@ void create_camera(World* world,
                    float x, float y, float z,
                    float pitch, float yaw,
                    const char* name);
+void create_camera_at_current_position(World* world);

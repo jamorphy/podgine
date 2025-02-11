@@ -64,6 +64,8 @@ void input(const sapp_event* ev)
         else if (ev->key_code == SAPP_KEYCODE_A) world.control.key_a = true;
         else if (ev->key_code == SAPP_KEYCODE_S) world.control.key_s = true;
         else if (ev->key_code == SAPP_KEYCODE_D) world.control.key_d = true;
+        else if (ev->key_code == SAPP_KEYCODE_SPACE) world.control.key_spc = true;
+        else if (ev->key_code == SAPP_KEYCODE_LEFT_SHIFT) world.control.key_shift = true;
         break;
 
     case SAPP_EVENTTYPE_KEY_UP:
@@ -71,6 +73,8 @@ void input(const sapp_event* ev)
         else if (ev->key_code == SAPP_KEYCODE_A) world.control.key_a = false;
         else if (ev->key_code == SAPP_KEYCODE_S) world.control.key_s = false;
         else if (ev->key_code == SAPP_KEYCODE_D) world.control.key_d = false;
+        else if (ev->key_code == SAPP_KEYCODE_SPACE) world.control.key_spc = false;
+        else if (ev->key_code == SAPP_KEYCODE_LEFT_SHIFT) world.control.key_shift = false;
         break;
 
     case SAPP_EVENTTYPE_MOUSE_DOWN:
@@ -157,7 +161,7 @@ void cleanup(void)
 
 sapp_desc sokol_main(int argc, char* argv[])
 {
-    int WINDOW_WIDTH = 1024, WINDOW_HEIGHT = 768;
+    int WINDOW_WIDTH = 1280, WINDOW_HEIGHT = 960;
     (void)argc; (void)argv;
     return (sapp_desc){
         .init_cb = init,

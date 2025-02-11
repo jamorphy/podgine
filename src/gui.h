@@ -14,6 +14,7 @@
 #include "../libs/sokol/sokol_gfx.h"
 #include "../libs/sokol/sokol_nuklear.h"
 
+#include "camera.h"
 #include "types.h"
 
 void init_nuklear_gui(World* world);

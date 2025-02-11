@@ -38,6 +38,12 @@ void update_camera_frame(World* world) {
         world->camera.position[0] += -right[0] * move_speed;
         world->camera.position[2] += -right[2] * move_speed;
     }
+    if (world->control.key_spc) {
+        world->camera.position[1] += move_speed;
+    }
+    if (world->control.key_shift) {
+        world->camera.position[1] -= move_speed;
+    }
 
     // Calculate target for view matrix
     vec3 target;
@@ -75,4 +81,25 @@ void create_camera(World* world,
     new_cam->name[31] = '\0';
 
     world->camera_count++;
+}
+
+void create_camera_at_current_position(World* world) {
+    if (world->camera_count >= 16) {
+        printf("Warning: Maximum number of cameras reached\n");
+        return;
+    }
+
+    // Generate a default name for the new camera
+    char camera_name[32];
+    snprintf(camera_name, sizeof(camera_name), "Camera %d", world->camera_count);
+
+    // Create a new camera at the current editor camera position
+    Camera current = world->camera;
+    create_camera(world, 
+                 current.position[0], 
+                 current.position[1], 
+                 current.position[2], 
+                 current.pitch, 
+                 current.yaw, 
+                 camera_name);
 }

@@ -66,7 +66,7 @@ typedef struct {
     float last_mouse_y;
     Camera* active_camera;
 
-    bool key_w, key_a, key_s, key_d;
+    bool key_w, key_a, key_s, key_d, key_spc, key_shift;
 } CameraControls;
 
 typedef struct World {

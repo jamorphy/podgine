@@ -6,8 +6,6 @@
 
 #define OPENAI_API_URL "https://api.openai.com/v1/chat/completions"
 
-// Keep the existing llm_init(), llm_cleanup(), llm_set_temperature(), and llm_set_max_tokens() functions as they are
-
 LLMConfig* llm_init(const char* api_key, const char* model) {
     LLMConfig* config = malloc(sizeof(LLMConfig));
     if (!config) return NULL;
@@ -20,8 +18,8 @@ LLMConfig* llm_init(const char* api_key, const char* model) {
 
     config->api_key = strdup(api_key);
     config->model = strdup(model);
-    config->temperature = 0.7; // default temperature
-    config->max_tokens = 1000; // default max tokens
+    config->temperature = 0.7;
+    config->max_tokens = 1000;
 
     return config;
 }
@@ -165,24 +163,22 @@ char* llm_chat(LLMConfig* config, const LLMMessage* messages, int message_count)
     return content;
 }
 
-// Keep the existing llm_complete() and llm_chat() functions as they are
+/* int main() { */
+/*     LLMConfig* config = llm_init("apikeyhere", "gpt-4o-turbo"); */
+/*     if (!config) { */
+/*         fprintf(stderr, "Failed to initialize LLM\n"); */
+/*         return 1; */
+/*     } */
 
-int main() {
-    LLMConfig* config = llm_init("apikeyhere", "gpt-3.5-turbo");
-    if (!config) {
-        fprintf(stderr, "Failed to initialize LLM\n");
-        return 1;
-    }
+/*     llm_set_temperature(config, 0.7); */
+/*     llm_set_max_tokens(config, 1000); */
 
-    llm_set_temperature(config, 0.7);
-    llm_set_max_tokens(config, 1000);
+/*     char* response = llm_complete(config, "Tell me a deez nuts joke."); */
+/*     if (response) { */
+/*         printf("Response: %s\n", response); */
+/*         free(response); */
+/*     } */
 
-    char* response = llm_complete(config, "Tell me a joke about programming.");
-    if (response) {
-        printf("Response: %s\n", response);
-        free(response);
-    }
-
-    llm_cleanup(config);
-    return 0;
-}
+/*     llm_cleanup(config); */
+/*     return 0; */
+/* } */
