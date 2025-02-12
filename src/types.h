@@ -30,9 +30,9 @@ typedef struct {
 } Renderable;
 
 typedef struct {
-    float position[3];
-    float rotation[3];
-    float scale[3];
+    vec3 position;
+    vec3 rotation;
+    vec3 scale;
 } Transform;
 
 typedef struct Entity {
