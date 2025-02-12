@@ -12,6 +12,9 @@ void destroy_entity(World* world, Entity* entity);
 void destroy_mesh(Mesh* mesh);
 void destroy_material(Material* material);
 
+
+void create_grid(World* world);
+
 // move these some where else
 Mesh* create_cube_mesh(void);
 Mesh* create_quad_mesh(sg_image texture);
@@ -23,6 +26,6 @@ char* read_shader_file(const char* filepath);
 void render_entities(World* world, mat4x4 view, mat4x4 proj);
 Mesh* add_grid_mesh(World* world, Entity* entity);
 Entity* create_grid_entity(World* world);
-Entity* create_grid(World* world);
 void init_camera_visualization(World* world);
 void render_cameras(World* world, mat4x4 view, mat4x4 proj);
+void render_grid(World* world, mat4x4 view, mat4x4 proj);

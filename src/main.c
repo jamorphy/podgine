@@ -30,9 +30,11 @@ void init(void)
     
     memset(&world, 0, sizeof(World));
     world.in_edit_mode = true; // start in edit mode
+    world.show_grid = 0;
 
     init_nuklear_gui(&world);
 
+    create_grid(&world);
     create_cube(&world, (vec3) { 5.0f, 5.0f, 5.0f },    (vec3) { 2.0f, 2.0f, 2.0f });
     create_cube(&world, (vec3) { -15.0f, 10.0f, 9.0f }, (vec3) { 3.0f, 3.0f, 4.0f });
 
@@ -144,6 +146,9 @@ void frame(void)
             .swapchain = sglue_swapchain()
         });
 
+    if (world.show_grid) {
+        render_grid(&world, world.camera.view, proj);
+    }
     render_entities(&world, world.camera.view, proj);
     render_cameras(&world, world.camera.view, proj);
     draw_nuklear_gui(&world);

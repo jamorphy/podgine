@@ -72,6 +72,8 @@ void draw_nuklear_gui(World* world) {
             }
         }
 
+        nk_checkbox_label(nk_ctx, "Show Grid", &world->show_grid);
+
         if (world->in_edit_mode) {
             nk_layout_row_static(nk_ctx, 30, 180, 1);  // Adjust width (180) as needed
             if (nk_button_label(nk_ctx, "Create Camera Here")) {

@@ -4,6 +4,7 @@
 #include "../libs/sokol/sokol_gfx.h"
 #include "../libs/sokol/sokol_glue.h"
 #include "../libs/linmath/linmath.h"
+#include "../libs/nuklear/nuklear.h"
 #include "constants.h"
 
 typedef struct {
@@ -70,16 +71,9 @@ typedef struct World {
     Entity entities[1000];
     uint32_t entity_count;
     uint32_t next_entity_id;
-
-    Mesh meshes[1000];
-    uint32_t mesh_count;
-    Material materials[1000];
-    uint32_t material_count;
     
     // maybe move camera stuff to another struct
     Camera cameras[MAX_CAMERAS];
-    //Mesh camera_mesh;
-    //sg_pipeline camera_visualization_pipeline;
     int camera_count;
     uint32_t next_camera_id;
     Camera camera;
@@ -87,10 +81,11 @@ typedef struct World {
 
     // maybe move state to another struct too
     bool in_edit_mode;
+    nk_bool show_grid;
     
-    //sg_pipeline pipelines[1000];
 
     Renderable camera_visualization_renderable;
+    Renderable grid_renderable;
 
     Renderable renderables[1000];
     uint32_t renderable_count;

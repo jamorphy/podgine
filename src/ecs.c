@@ -8,68 +8,107 @@
 
 #define COMPONENTS_PER_VERTEX 7 // 3 pos floats + 4 color floats
 
-/* Mesh* add_grid_mesh(World* world, Entity* entity) { */
-/*     const int GRID_SIZE = 20; */
-/*     const float GRID_SPACE = 2.0f; */
-/*     const int LINES_PER_DIR = (GRID_SIZE * 2 + 1); */
-/*     const int VERTS_PER_LINE = 2; */
-/*     const int TOTAL_LINES = LINES_PER_DIR * 2; */
-/*     const int VERTEX_COUNT = TOTAL_LINES * VERTS_PER_LINE; */
+// TODOL: Destroy grid fn
 
-/*     float* vertices = (float*)malloc(VERTEX_COUNT * 6 * sizeof(float)); */
-/*     int vertex_idx = 0; */
+void create_grid(World* world) {
+    // Allocate the mesh and material directly
+    Mesh* mesh = (Mesh*)malloc(sizeof(Mesh));
+    Material* material = (Material*)malloc(sizeof(Material));
 
-/*     // Create grid lines */
-/*     for (int i = -GRID_SIZE; i <= GRID_SIZE; i++) { */
-/*         float color_intensity = 1.0f; */
+    // Create the grid mesh
+    const int GRID_SIZE = 1000;
+    const float GRID_SPACE = 10.0f;
+    const int LINES_PER_DIR = (GRID_SIZE * 2 + 1);
+    const int VERTS_PER_LINE = 2;
+    const int TOTAL_LINES = LINES_PER_DIR * 2;
+    const int VERTEX_COUNT = TOTAL_LINES * VERTS_PER_LINE;
 
-/*         // Lines along X axis */
-/*         vertices[vertex_idx++] = i * GRID_SPACE; */
-/*         vertices[vertex_idx++] = -0.01f; */
-/*         vertices[vertex_idx++] = -GRID_SIZE * GRID_SPACE; */
-/*         vertices[vertex_idx++] = color_intensity; */
-/*         vertices[vertex_idx++] = color_intensity; */
-/*         vertices[vertex_idx++] = color_intensity; */
+    float* vertices = (float*)malloc(VERTEX_COUNT * 6 * sizeof(float));
+    int vertex_idx = 0;
 
-/*         vertices[vertex_idx++] = i * GRID_SPACE; */
-/*         vertices[vertex_idx++] = 0.0f; */
-/*         vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE; */
-/*         vertices[vertex_idx++] = color_intensity; */
-/*         vertices[vertex_idx++] = color_intensity; */
-/*         vertices[vertex_idx++] = color_intensity; */
+    // Create grid lines
+    for (int i = -GRID_SIZE; i <= GRID_SIZE; i++) {
+        float color_intensity = (i == 0) ? 1.0f : 0.5f;  // Make center lines brighter
 
-/*         // Lines along Z axis */
-/*         vertices[vertex_idx++] = -GRID_SIZE * GRID_SPACE; */
-/*         vertices[vertex_idx++] = 0.0f; */
-/*         vertices[vertex_idx++] = i * GRID_SPACE; */
-/*         vertices[vertex_idx++] = color_intensity; */
-/*         vertices[vertex_idx++] = color_intensity; */
-/*         vertices[vertex_idx++] = color_intensity; */
+        // Lines along X axis
+        vertices[vertex_idx++] = i * GRID_SPACE;
+        vertices[vertex_idx++] = 0.0f;
+        vertices[vertex_idx++] = -GRID_SIZE * GRID_SPACE;
+        vertices[vertex_idx++] = color_intensity;
+        vertices[vertex_idx++] = color_intensity;
+        vertices[vertex_idx++] = color_intensity;
 
-/*         vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE; */
-/*         vertices[vertex_idx++] = 0.0f; */
-/*         vertices[vertex_idx++] = i * GRID_SPACE; */
-/*         vertices[vertex_idx++] = color_intensity; */
-/*         vertices[vertex_idx++] = color_intensity; */
-/*         vertices[vertex_idx++] = color_intensity; */
-/*     } */
+        vertices[vertex_idx++] = i * GRID_SPACE;
+        vertices[vertex_idx++] = 0.0f;
+        vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE;
+        vertices[vertex_idx++] = color_intensity;
+        vertices[vertex_idx++] = color_intensity;
+        vertices[vertex_idx++] = color_intensity;
 
-/*     Mesh* mesh = &world->meshes[entity->id]; */
-/*     mesh->vertex_buffer = sg_make_buffer(&(sg_buffer_desc){ */
-/*             .data = (sg_range) { */
-/*                 .ptr = vertices, */
-/*                 .size = vertex_idx * sizeof(float) */
-/*             }, */
-/*         .label = "grid-vertices" */
-/*     }); */
-/*     mesh->vertex_count = vertex_idx / 6; */
-/*     mesh->index_count = 0; */
-/*     mesh->index_buffer.id = 0; */
+        // Lines along Z axis
+        vertices[vertex_idx++] = -GRID_SIZE * GRID_SPACE;
+        vertices[vertex_idx++] = 0.0f;
+        vertices[vertex_idx++] = i * GRID_SPACE;
+        vertices[vertex_idx++] = color_intensity;
+        vertices[vertex_idx++] = color_intensity;
+        vertices[vertex_idx++] = color_intensity;
 
-/*     free(vertices); */
-/*     entity->mesh = mesh; */
-/*     return mesh; */
-/* } */
+        vertices[vertex_idx++] = GRID_SIZE * GRID_SPACE;
+        vertices[vertex_idx++] = 0.0f;
+        vertices[vertex_idx++] = i * GRID_SPACE;
+        vertices[vertex_idx++] = color_intensity;
+        vertices[vertex_idx++] = color_intensity;
+        vertices[vertex_idx++] = color_intensity;
+    }
+
+    mesh->vertex_buffer = sg_make_buffer(&(sg_buffer_desc){
+        .data = (sg_range) {
+            .ptr = vertices,
+            .size = vertex_idx * sizeof(float)
+        },
+        .label = "grid-vertices"
+    });
+    mesh->vertex_count = vertex_idx / 6;
+    mesh->index_count = 0;
+    mesh->index_buffer.id = 0;
+
+    free(vertices);
+
+    char* vs_source = read_shader_file("src/shaders/grid_vs.metal");
+    char* fs_source = read_shader_file("src/shaders/grid_fs.metal");
+    
+    // Create the grid material
+    material->shader = sg_make_shader(&(sg_shader_desc){
+            .uniform_blocks[0] = {
+                .stage = SG_SHADERSTAGE_VERTEX,
+                .size = sizeof(vs_params_t),  // Assuming same MVP matrix struct
+                .msl_buffer_n = 0,  // Match buffer index from Metal shader
+            },
+            .vertex_func = { .source = vs_source },
+            .fragment_func = { .source = fs_source },
+            .label = "grid-shader"
+        });
+
+    material->pipeline = sg_make_pipeline(&(sg_pipeline_desc){
+        .shader = material->shader,
+        .layout = {
+            .attrs = {
+                [0] = { .format = SG_VERTEXFORMAT_FLOAT3 },
+                [1] = { .format = SG_VERTEXFORMAT_FLOAT3 }
+            }
+        },
+        .primitive_type = SG_PRIMITIVETYPE_LINES,
+        .depth = {
+            .write_enabled = true,
+            .compare = SG_COMPAREFUNC_LESS_EQUAL
+        },
+        .label = "grid-pipeline"
+    });
+
+    // Assign to the grid renderable
+    world->grid_renderable.mesh = mesh;
+    world->grid_renderable.material = material;
+}
 
 Mesh* create_quad_mesh(sg_image texture) {
     Mesh* mesh = malloc(sizeof(Mesh));
@@ -114,8 +153,6 @@ Mesh* create_quad_mesh(sg_image texture) {
 
     return mesh;
 }
-
-
 
 Mesh* create_cube_mesh(void) {
 
@@ -281,22 +318,12 @@ Material* create_cube_material(void) {
 }
 
 void init_camera_visualization(World* world)  {
-    // Create a material for camera visualization using your existing cube material
-    Material* camera_material = create_cube_material();
-    
-    // Store the material in your world's materials array
-    world->materials[world->material_count] = *camera_material;
-    free(camera_material);  // Free the allocated material after copying
     
     // Initialize the dedicated camera visualization renderable
-    world->camera_visualization_renderable.material = &world->materials[world->material_count];
+    world->camera_visualization_renderable.material = create_cube_material();
     world->camera_visualization_renderable.mesh = create_cube_mesh();
     
-    world->material_count++;
-    // Note: we no longer increment renderable_count since we're not using the global array
 }
-
-
 
 void destroy_mesh(Mesh* mesh) {
     if (mesh) {
@@ -502,6 +529,34 @@ Mesh create_camera_mesh(void) {
     mesh.bindings.index_buffer = mesh.index_buffer;
 
     return mesh;
+}
+
+void render_grid(World* world, mat4x4 view, mat4x4 proj) {
+    // Start with identity model matrix (grid is at world origin)
+    mat4x4 model_matrix;
+    mat4x4_identity(model_matrix);
+    
+    // Compute MVP matrix
+    mat4x4 mvp_matrix;
+    mat4x4_mul(mvp_matrix, proj, view);
+    mat4x4_mul(mvp_matrix, mvp_matrix, model_matrix);
+
+    // Set up rendering state
+    sg_apply_pipeline(world->grid_renderable.material->pipeline);
+    
+    // Create bindings for the grid mesh
+    sg_bindings bindings = {
+        .vertex_buffers[0] = world->grid_renderable.mesh->vertex_buffer
+    };
+    sg_apply_bindings(&bindings);
+
+    // Apply MVP matrix uniform
+    vs_params_t vs_params;
+    memcpy(vs_params.mvp, mvp_matrix, sizeof(mvp_matrix));
+    sg_apply_uniforms(0, &SG_RANGE(vs_params));
+
+    // Draw the grid lines
+    sg_draw(0, world->grid_renderable.mesh->vertex_count, 1);
 }
 
 void render_cameras(World* world, mat4x4 view, mat4x4 proj) {
