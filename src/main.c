@@ -5,7 +5,7 @@
 #include <math.h>
 
 #include "linmath.h"
-#include "utils.h"
+//#include "utils.h"
 #include "utils_math.h"
 
 #define SOKOL_METAL
@@ -18,6 +18,7 @@
 #include "camera.h"
 #include "ecs.h"
 #include "gui.h"
+#include "render.h"
 
 World world;
 
@@ -34,7 +35,7 @@ void init(void)
 
     init_nuklear_gui(&world);
 
-    create_grid(&world);
+    create_and_set_grid(&world);
     create_cube(&world, (vec3) { 5.0f, 5.0f, 5.0f },    (vec3) { 2.0f, 2.0f, 2.0f });
     create_cube(&world, (vec3) { -15.0f, 10.0f, 9.0f }, (vec3) { 3.0f, 3.0f, 4.0f });
 

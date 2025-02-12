@@ -35,10 +35,18 @@ typedef struct {
     vec3 scale;
 } Transform;
 
+typedef struct Character {
+    uint32_t id;
+    const char* character_id;        // e.g. "host_1" 
+    const char* display_name;   // e.g. "Dr. Sarah Chen"
+    uint32_t camera_id;        // Each character's dedicated camera
+} Character;
+
 typedef struct Entity {
     uint32_t id;
     Transform transform;
     Renderable* renderable;
+    Character* character;
 } Entity;
 
 typedef struct {

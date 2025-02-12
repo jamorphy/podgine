@@ -3,14 +3,36 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "../libs/stb_image.h"
+#include "utils.h"
 
 #define COMPONENTS_PER_VERTEX 7 // 3 pos floats + 4 color floats
 
-// TODOL: Destroy grid fn
+// TODO: Destroy grid fn
 
-void create_grid(World* world) {
+// entity_set_transform_xyz
+void entity_set_transform_xyz(Entity* entity, vec3 xyz)
+{
+    entity->transform.position[0] = xyz[0];
+    entity->transform.position[1] = xyz[1];
+    entity->transform.position[2] = xyz[2];
+}
+// entity_set_transform_rot
+void entity_set_transform_rot(Entity* entity, vec3 rot)
+{
+    entity->transform.rotation[0] = rot[0];
+    entity->transform.rotation[1] = rot[1];
+    entity->transform.rotation[2] = rot[2];
+}
+// entity_set_transform_scale
+void entity_set_transform_scale(Entity* entity, vec3 scale)
+{
+    entity->transform.scale[0] = scale[0];
+    entity->transform.scale[1] = scale[1];
+    entity->transform.scale[2] = scale[2];
+}
+
+void create_and_set_grid(World* world)
+{
     // Allocate the mesh and material directly
     Mesh* mesh = (Mesh*)malloc(sizeof(Mesh));
     Material* material = (Material*)malloc(sizeof(Material));
@@ -74,8 +96,8 @@ void create_grid(World* world) {
 
     free(vertices);
 
-    char* vs_source = read_shader_file("src/shaders/grid_vs.metal");
-    char* fs_source = read_shader_file("src/shaders/grid_fs.metal");
+    char* vs_source = read_text_file("src/shaders/grid_vs.metal");
+    char* fs_source = read_text_file("src/shaders/grid_fs.metal");
     
     // Create the grid material
     material->shader = sg_make_shader(&(sg_shader_desc){
@@ -110,7 +132,8 @@ void create_grid(World* world) {
     world->grid_renderable.material = material;
 }
 
-Mesh* create_quad_mesh(sg_image texture) {
+Mesh* create_quad_mesh(sg_image texture)
+{
     Mesh* mesh = malloc(sizeof(Mesh));
     if (!mesh) {
         printf("Failed to allocate quad mesh\n");
@@ -154,8 +177,8 @@ Mesh* create_quad_mesh(sg_image texture) {
     return mesh;
 }
 
-Mesh* create_cube_mesh(void) {
-
+Mesh* create_cube_mesh(void)
+{
     Mesh* mesh = malloc(sizeof(Mesh));
     if (!mesh) {
         printf("Failed to allocated a mesh\n");
@@ -210,15 +233,16 @@ Mesh* create_cube_mesh(void) {
     return mesh;
 }
 
-Material* create_textured_material(void) {
+Material* create_textured_material(void)
+{
     Material* material = malloc(sizeof(Material));
     if (!material) {
         printf("Failed to allocate material\n");
         return NULL;
     }
 
-    char* vs_source = read_shader_file("src/shaders/texture_vs.metal");
-    char* fs_source = read_shader_file("src/shaders/texture_fs.metal");
+    char* vs_source = read_text_file("src/shaders/texture_vs.metal");
+    char* fs_source = read_text_file("src/shaders/texture_fs.metal");
 
     material->shader = sg_make_shader(&(sg_shader_desc){
         .uniform_blocks[0] = {
@@ -270,17 +294,16 @@ Material* create_textured_material(void) {
     return material;
 }
 
-Material* create_cube_material(void) {
-
+Material* create_cube_material(void)
+{
     Material* material = malloc(sizeof(Material));
     if (!material) {
         printf("Failed to allocated material\n");
         return NULL;
     }
 
-    // Load the shaders (vertex and fragment shaders for the cube)
-    char* vs_source = read_shader_file("src/shaders/cube_vs.metal");
-    char* fs_source = read_shader_file("src/shaders/cube_fs.metal");
+    char* vs_source = read_text_file("src/shaders/cube_vs.metal");
+    char* fs_source = read_text_file("src/shaders/cube_fs.metal");
 
     material->shader = sg_make_shader(&(sg_shader_desc){
         .uniform_blocks[0] = {
@@ -317,46 +340,22 @@ Material* create_cube_material(void) {
     return material;
 }
 
-void init_camera_visualization(World* world)  {
-
-    int img_width, img_height, img_channels;
-    unsigned char* img_data = stbi_load("assets/camera.jpg", &img_width, &img_height, &img_channels, 4);
-    if (!img_data) {
-        printf("Failed to load image: %s\n", "assets/camera.jpg");
-    }
-
-    // Create texture
-    sg_image texture = sg_make_image(&(sg_image_desc){
-        .width = img_width,
-        .height = img_height,
-        .pixel_format = SG_PIXELFORMAT_RGBA8,
-        .data.subimage[0][0] = {
-            .ptr = img_data,
-            .size = (size_t)(img_width * img_height * 4)
-        }
-    });
-
-    stbi_image_free(img_data);
+void init_camera_visualization(World* world)
+{
+    sg_image texture = create_image_texture("assets/camera.jpg");
 
     // Create renderable
     if (world->renderable_count >= 1000) {
         printf("Exceeded max renderable count\n");
     }
 
-    /* Renderable* renderable = &world->renderables[world->renderable_count++]; */
-    /* entity->renderable = renderable; */
-
     // Set up mesh and material
     world->camera_visualization_renderable.mesh = create_quad_mesh(texture);
     world->camera_visualization_renderable.material = create_textured_material();
-    
-    // Initialize the dedicated camera visualization renderable
-    /* world->camera_visualization_renderable.material = create_cube_material(); */
-    /* world->camera_visualization_renderable.mesh = create_cube_mesh(); */
-    
 }
 
-void destroy_mesh(Mesh* mesh) {
+void destroy_mesh(Mesh* mesh)
+{
     if (mesh) {
         sg_destroy_buffer(mesh->vertex_buffer);
         sg_destroy_buffer(mesh->index_buffer);
@@ -364,7 +363,8 @@ void destroy_mesh(Mesh* mesh) {
     }
 }
 
-void destroy_material(Material* material) {
+void destroy_material(Material* material)
+{
     if (material) {
         sg_destroy_shader(material->shader);
         sg_destroy_pipeline(material->pipeline);
@@ -372,9 +372,8 @@ void destroy_material(Material* material) {
     }
 }
 
-
-
-Entity* create_entity(World *world) {
+Entity* create_entity(World *world)
+{
     if (world->entity_count >= 1000) {
         printf("Exceeded max entity count\n");
         return NULL;
@@ -384,17 +383,17 @@ Entity* create_entity(World *world) {
     entity->id = world->next_entity_id++;
 
     entity->transform = (Transform){0};
-    entity->transform.scale[0] = 1.0f;
-    entity->transform.scale[1] = 1.0f;
-    entity->transform.scale[2] = 1.0f;
+    entity_set_transform_scale(entity, (vec3){1.0f, 1.0f, 1.0f});
 
     entity->renderable = NULL;
+    entity->character = NULL;
 
     world->entity_count++;
     return entity;
 };
 
-void destroy_entity(World *world, Entity *entity) {
+void destroy_entity(World *world, Entity *entity)
+{
     size_t index = entity - world->entities;
 
     // Validate index
@@ -420,42 +419,17 @@ void destroy_entity(World *world, Entity *entity) {
     world->entity_count--;
 }
 
-Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
+Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale)
+{
     Entity* entity = create_entity(world);
     if (!entity) return NULL;
 
     // Set transform
-    entity->transform.position[0] = pos[0];
-    entity->transform.position[1] = pos[1];
-    entity->transform.position[2] = pos[2];
+    entity_set_transform_xyz(entity, pos);
+    entity_set_transform_scale(entity, scale);
+    entity_set_transform_rot(entity, (vec3){0.0f, 0.0f, 0.0f});
 
-    entity->transform.scale[0] = scale[0];
-    entity->transform.scale[1] = scale[1];
-    entity->transform.scale[2] = scale[2];
-
-    entity->transform.rotation[0] = 0.0f;
-    entity->transform.rotation[1] = 0.0f;
-    entity->transform.rotation[2] = 0.0f;
-
-    int img_width, img_height, img_channels;
-    unsigned char* img_data = stbi_load(image_path, &img_width, &img_height, &img_channels, 4);
-    if (!img_data) {
-        printf("Failed to load image: %s\n", image_path);
-        return NULL;
-    }
-
-    // Create texture
-    sg_image texture = sg_make_image(&(sg_image_desc){
-        .width = img_width,
-        .height = img_height,
-        .pixel_format = SG_PIXELFORMAT_RGBA8,
-        .data.subimage[0][0] = {
-            .ptr = img_data,
-            .size = (size_t)(img_width * img_height * 4)
-        }
-    });
-
-    stbi_image_free(img_data);
+    sg_image texture = create_image_texture(image_path);
 
     // Create renderable
     if (world->renderable_count >= 1000) {
@@ -474,8 +448,8 @@ Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale) {
 }
 
 
-Entity* create_cube(World* world, vec3 pos, vec3 scale) {
-
+Entity* create_cube(World* world, vec3 pos, vec3 scale)
+{
     Entity* entity = create_entity(world);
     if (!entity) return NULL;
 
@@ -501,26 +475,8 @@ Entity* create_cube(World* world, vec3 pos, vec3 scale) {
     return entity;
 }
 
-// Function to compute the model matrix from the Transform component
-void compute_model_matrix(Transform* transform, mat4x4 out_matrix) {
-    mat4x4_identity(out_matrix);
-
-    // Apply translation
-    mat4x4_translate_in_place(out_matrix, transform->position[0], transform->position[1], transform->position[2]);
-
-    // Apply rotation (assuming Euler angles in radians)
-    mat4x4 rotation;
-    mat4x4_identity(rotation);
-    mat4x4_rotate_X(rotation, rotation, transform->rotation[0]);
-    mat4x4_rotate_Y(rotation, rotation, transform->rotation[1]);
-    mat4x4_rotate_Z(rotation, rotation, transform->rotation[2]);
-    mat4x4_mul(out_matrix, out_matrix, rotation);
-
-    // Apply scaling
-    mat4x4_scale_aniso(out_matrix, out_matrix, transform->scale[0], transform->scale[1], transform->scale[2]);
-}
-
-Mesh create_camera_mesh(void) {
+Mesh create_camera_mesh(void)
+{
     // Simple pyramid-like shape for camera representation
     float vertices[] = {
         // Position (x, y, z)        // Color (r, g, b)
@@ -561,107 +517,3 @@ Mesh create_camera_mesh(void) {
 
     return mesh;
 }
-
-void render_grid(World* world, mat4x4 view, mat4x4 proj) {
-    // Start with identity model matrix (grid is at world origin)
-    mat4x4 model_matrix;
-    mat4x4_identity(model_matrix);
-    
-    // Compute MVP matrix
-    mat4x4 mvp_matrix;
-    mat4x4_mul(mvp_matrix, proj, view);
-    mat4x4_mul(mvp_matrix, mvp_matrix, model_matrix);
-
-    // Set up rendering state
-    sg_apply_pipeline(world->grid_renderable.material->pipeline);
-    
-    // Create bindings for the grid mesh
-    sg_bindings bindings = {
-        .vertex_buffers[0] = world->grid_renderable.mesh->vertex_buffer
-    };
-    sg_apply_bindings(&bindings);
-
-    // Apply MVP matrix uniform
-    vs_params_t vs_params;
-    memcpy(vs_params.mvp, mvp_matrix, sizeof(mvp_matrix));
-    sg_apply_uniforms(0, &SG_RANGE(vs_params));
-
-    // Draw the grid lines
-    sg_draw(0, world->grid_renderable.mesh->vertex_count, 1);
-}
-
-void render_cameras(World* world, mat4x4 view, mat4x4 proj) {
-    for (int i = 0; i < world->camera_count; i++) {
-        Camera* camera = &world->cameras[i];
-
-        // Start with identity
-        mat4x4 model_matrix;
-        mat4x4_identity(model_matrix);
-
-        mat4x4_translate_in_place(model_matrix, 
-            camera->position[0],
-            camera->position[1],
-            camera->position[2]);
-        
-        // Then rotate
-        mat4x4 temp;
-        float pitch_rad = camera->pitch * (M_PI / 180.0f);
-        float yaw_rad = camera->yaw * (M_PI / 180.0f);
-        
-        mat4x4_rotate_X(temp, model_matrix, pitch_rad);
-        mat4x4_rotate_Y(model_matrix, temp, yaw_rad);
-
-        // First scale (small cube)
-        mat4x4_scale(model_matrix, model_matrix, 0.25f);
-        
-        // MVP computation
-        mat4x4 mvp_matrix;
-        mat4x4_mul(mvp_matrix, proj, view);
-        mat4x4_mul(mvp_matrix, mvp_matrix, model_matrix);
-
-        Renderable* camera_renderable = &world->camera_visualization_renderable;
-        
-        sg_apply_pipeline(camera_renderable->material->pipeline);
-        sg_apply_bindings(&camera_renderable->mesh->bindings);
-
-        vs_params_t vs_params;
-        memcpy(vs_params.mvp, mvp_matrix, sizeof(mvp_matrix));
-        sg_apply_uniforms(0, &SG_RANGE(vs_params));
-
-        sg_draw(0, camera_renderable->mesh->index_count, 1);
-    }
-}
-
-void render_entities(World* world, mat4x4 view, mat4x4 proj) {
-    for (uint32_t i = 0; i < world->entity_count; ++i) {
-        Entity* entity = &world->entities[i];
-
-        if (entity->renderable) {
-            // Compute the model matrix from the Transform component
-            mat4x4 model_matrix;
-            compute_model_matrix(&entity->transform, model_matrix);
-
-            // Compute the MVP matrix
-            mat4x4 mvp_matrix;
-            mat4x4_mul(mvp_matrix, proj, view);
-            mat4x4_mul(mvp_matrix, mvp_matrix, model_matrix);
-
-            // Set the pipeline state object (PSO) for the material
-            sg_apply_pipeline(entity->renderable->material->pipeline);
-
-            // Bind the mesh's vertex and index buffers
-            sg_apply_bindings(&entity->renderable->mesh->bindings);
-
-            // Prepare uniform data
-            vs_params_t vs_params;
-            memcpy(vs_params.mvp, mvp_matrix, sizeof(mvp_matrix));
-
-            // Apply uniforms with correct stage and uniform block index
-            sg_apply_uniforms(0, &SG_RANGE(vs_params));
-
-            // Issue the draw call
-            sg_draw(0, entity->renderable->mesh->index_count, 1);
-        }
-    }
-}
-
