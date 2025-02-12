@@ -82,7 +82,6 @@ typedef struct World {
     // maybe move state to another struct too
     bool in_edit_mode;
     nk_bool show_grid;
-    
 
     Renderable camera_visualization_renderable;
     Renderable grid_renderable;

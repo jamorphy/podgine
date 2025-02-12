@@ -4,6 +4,7 @@
 #include "scene.h"
 #include "ecs.h"
 #include "constants.h"
+#include "camera.h"
 
 void clear_scene(World* world) {
     Camera editor_camera = world->cameras[0];
@@ -165,14 +166,74 @@ bool load_scene(World* world, const char* filename) {
             scale[2] = (float)cJSON_GetArrayItem(scale_array, 2)->valuedouble;
         }
 
-        // Create the cube entity
-        Entity* entity = create_cube(world, position, scale);
+        // Get mesh type
+        cJSON* mesh = cJSON_GetObjectItem(components, "mesh");
+        if (!mesh) continue;
+
+        cJSON* mesh_type = cJSON_GetObjectItem(mesh, "type");
+        if (!mesh_type || !cJSON_IsString(mesh_type)) continue;
+
+        Entity* entity = NULL;
+        if (strcmp(mesh_type->valuestring, "cube") == 0) {
+            entity = create_cube(world, position, scale);
+        }
+        else if (strcmp(mesh_type->valuestring, "image") == 0) {
+            // For images, we need to get the image path
+            cJSON* image_path = cJSON_GetObjectItem(mesh, "image_path");
+            if (!image_path || !cJSON_IsString(image_path)) {
+                fprintf(stderr, "Image entity missing image_path\n");
+                continue;
+            }
+            entity = create_img(world, image_path->valuestring, position, scale);
+        }
+
         if (!entity) {
-            fprintf(stderr, "Failed to create cube entity\n");
+            fprintf(stderr, "Failed to create entity of type: %s\n", mesh_type->valuestring);
             cJSON_Delete(root);
             return false;
         }
     }
+
+    cJSON* cameras = cJSON_GetObjectItem(root, "cameras");
+    if (!cameras || !cJSON_IsArray(cameras)) {
+        fprintf(stderr, "Scene file missing cameras array or invalid format\n");
+        cJSON_Delete(root);
+        return false;
+    }
+
+    int camera_count = cJSON_GetArraySize(cameras);
+    for (int i = 0; i < camera_count; i++) {
+        cJSON* camera = cJSON_GetArrayItem(cameras, i);
+        
+        // Get camera name
+        cJSON* name = cJSON_GetObjectItem(camera, "name");
+        if (!name || !cJSON_IsString(name)) continue;
+        
+        // Get position
+        cJSON* pos_array = cJSON_GetObjectItem(camera, "position");
+        float x = 0, y = 0, z = 0;
+        if (pos_array && cJSON_IsArray(pos_array)) {
+            x = (float)cJSON_GetArrayItem(pos_array, 0)->valuedouble;
+            y = (float)cJSON_GetArrayItem(pos_array, 1)->valuedouble;
+            z = (float)cJSON_GetArrayItem(pos_array, 2)->valuedouble;
+        }
+        
+        // Get orientation
+        float pitch = 0, yaw = 0;
+        cJSON* pitch_json = cJSON_GetObjectItem(camera, "pitch");
+        cJSON* yaw_json = cJSON_GetObjectItem(camera, "yaw");
+        
+        if (pitch_json && cJSON_IsNumber(pitch_json)) {
+            pitch = (float)pitch_json->valuedouble;
+        }
+        if (yaw_json && cJSON_IsNumber(yaw_json)) {
+            yaw = (float)yaw_json->valuedouble;
+        }
+        
+        // Create the camera
+        create_camera(world, x, y, z, pitch, yaw, name->valuestring);
+    }
+    
     
     // Cleanup
     cJSON_Delete(root);
