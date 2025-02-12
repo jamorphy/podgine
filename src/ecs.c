@@ -318,10 +318,41 @@ Material* create_cube_material(void) {
 }
 
 void init_camera_visualization(World* world)  {
+
+    int img_width, img_height, img_channels;
+    unsigned char* img_data = stbi_load("assets/camera.jpg", &img_width, &img_height, &img_channels, 4);
+    if (!img_data) {
+        printf("Failed to load image: %s\n", "assets/camera.jpg");
+    }
+
+    // Create texture
+    sg_image texture = sg_make_image(&(sg_image_desc){
+        .width = img_width,
+        .height = img_height,
+        .pixel_format = SG_PIXELFORMAT_RGBA8,
+        .data.subimage[0][0] = {
+            .ptr = img_data,
+            .size = (size_t)(img_width * img_height * 4)
+        }
+    });
+
+    stbi_image_free(img_data);
+
+    // Create renderable
+    if (world->renderable_count >= 1000) {
+        printf("Exceeded max renderable count\n");
+    }
+
+    /* Renderable* renderable = &world->renderables[world->renderable_count++]; */
+    /* entity->renderable = renderable; */
+
+    // Set up mesh and material
+    world->camera_visualization_renderable.mesh = create_quad_mesh(texture);
+    world->camera_visualization_renderable.material = create_textured_material();
     
     // Initialize the dedicated camera visualization renderable
-    world->camera_visualization_renderable.material = create_cube_material();
-    world->camera_visualization_renderable.mesh = create_cube_mesh();
+    /* world->camera_visualization_renderable.material = create_cube_material(); */
+    /* world->camera_visualization_renderable.mesh = create_cube_mesh(); */
     
 }
 
