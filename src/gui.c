@@ -20,7 +20,7 @@ void draw_nuklear_gui(World* world) {
     struct nk_context* nk_ctx = world->ctx;
 
     nk_ctx = snk_new_frame();
-    if (nk_begin(nk_ctx, "nukes", nk_rect(0, 0, 200, 400),
+    if (nk_begin(nk_ctx, "nukes", nk_rect(0, 0, 250, 400),
                  NK_WINDOW_BORDER | NK_WINDOW_TITLE)) {
     
         nk_layout_row_static(nk_ctx, 30, 80, 1);
@@ -33,19 +33,10 @@ void draw_nuklear_gui(World* world) {
     
         char buffer[64];
     
-        snprintf(buffer, sizeof(buffer), "Pitch: %.2f°", world->camera.pitch);
-        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
+        snprintf(buffer, sizeof(buffer), "Pitch: %.2f° Yaw: %.2f°", world->camera.pitch, world->camera.yaw);
+        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);    
     
-        snprintf(buffer, sizeof(buffer), "Yaw: %.2f°", world->camera.yaw);
-        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
-    
-        snprintf(buffer, sizeof(buffer), "X: %.2f", world->camera.position[0]);
-        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
-    
-        snprintf(buffer, sizeof(buffer), "Y: %.2f", world->camera.position[1]);
-        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
-    
-        snprintf(buffer, sizeof(buffer), "Z: %.2f", world->camera.position[2]);
+        snprintf(buffer, sizeof(buffer), "X: %.2f Y: %.2f Z: %2.f", world->camera.position[0], world->camera.position[1], world->camera.position[2]);
         nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
 
         nk_layout_row_dynamic(nk_ctx, 20, 1);

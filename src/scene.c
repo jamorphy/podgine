@@ -7,7 +7,31 @@
 
 void clear_scene(World* world) {
     Camera editor_camera = world->cameras[0];
-    
+
+    for (uint32_t i = 0; i < world->renderable_count; i++) {
+        Renderable* renderable = &world->renderables[i];
+        if (renderable->material) {
+            // Destroy shader and pipeline
+            if (renderable->material->shader.id != 0) {
+                sg_destroy_shader(renderable->material->shader);
+            }
+            if (renderable->material->pipeline.id != 0) {
+                sg_destroy_pipeline(renderable->material->pipeline);
+            }
+        }
+        if (renderable->mesh) {
+            // Destroy buffers
+            if (renderable->mesh->vertex_buffer.id != 0) {
+                sg_destroy_buffer(renderable->mesh->vertex_buffer);
+            }
+            if (renderable->mesh->index_buffer.id != 0) {
+                sg_destroy_buffer(renderable->mesh->index_buffer);
+            }
+        }
+    }
+
+    world->renderable_count = 0;
+
     // Destroy all entities
     while (world->entity_count > 0) {
         uint32_t current_index = world->entity_count - 1;
@@ -15,8 +39,6 @@ void clear_scene(World* world) {
         
         destroy_entity(world, entity_to_destroy);
     }
-
-    world->renderable_count = 0;
     
     world->next_entity_id = 1;
     
