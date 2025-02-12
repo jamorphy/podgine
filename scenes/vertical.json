@@ -1,0 +1,191 @@
+{
+  "scene_version": 1,
+  "entities": [
+    {
+      "id": 1,
+      "components": {
+        "transform": {
+          "position": [0.0, 0.5, 0.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [100.0, 1.0, 100.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "components": {
+        "transform": {
+          "position": [-30.0, 25.0, -60.0],
+          "rotation": [0.0, 15.0, 0.0],
+          "scale": [45.0, 45.0, 1.0]
+        },
+        "mesh": {
+          "type": "image",
+          "image_path": "assets/farm.jpg"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "components": {
+        "transform": {
+          "position": [40.0, 85.0, 0.0],
+          "rotation": [90.0, 0.0, 0.0],
+          "scale": [30.0, 30.0, 1.0]
+        },
+        "mesh": {
+          "type": "image",
+          "image_path": "assets/duck.jpg"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "components": {
+        "transform": {
+          "position": [-20.0, 15.0, 40.0],
+          "rotation": [0.0, 180.0, -15.0],
+          "scale": [35.0, 35.0, 1.0]
+        },
+        "mesh": {
+          "type": "image",
+          "image_path": "assets/piano.jpg"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "components": {
+        "transform": {
+          "position": [60.0, 40.0, -20.0],
+          "rotation": [30.0, -45.0, 0.0],
+          "scale": [25.0, 25.0, 1.0]
+        },
+        "mesh": {
+          "type": "image",
+          "image_path": "assets/emacs.jpg"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "components": {
+        "transform": {
+          "position": [0.0, 45.0, 70.0],
+          "rotation": [-15.0, 180.0, 0.0],
+          "scale": [40.0, 40.0, 1.0]
+        },
+        "mesh": {
+          "type": "image",
+          "image_path": "assets/man.jpg"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "components": {
+        "transform": {
+          "position": [-50.0, 60.0, -10.0],
+          "rotation": [0.0, 45.0, 45.0],
+          "scale": [30.0, 30.0, 1.0]
+        },
+        "mesh": {
+          "type": "image",
+          "image_path": "assets/kermit.jpg"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "components": {
+        "transform": {
+          "position": [0.0, 95.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [100.0, 1.0, 100.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    }
+  ],
+  "cameras": [
+    {
+      "id": 0,
+      "name": "editor_camera",
+      "position": [2.76, 8.0, -142.12],
+      "pitch": -7.0,
+      "yaw": -358.0,
+      "is_editor": true
+    },
+    {
+      "id": 1,
+      "name": "bird_eye",
+      "position": [0.0, 120.0, 0.0],
+      "pitch": -90.0,
+      "yaw": 0.0
+    },
+    {
+      "id": 2,
+      "name": "ground_view",
+      "position": [0.0, 2.0, 0.0],
+      "pitch": 45.0,
+      "yaw": 180.0
+    },
+    {
+      "id": 3,
+      "name": "floating_diagonal",
+      "position": [50.0, 65.0, -50.0],
+      "pitch": -35.0,
+      "yaw": -135.0
+    },
+    {
+      "id": 4,
+      "name": "worms_eye",
+      "position": [0.0, 0.5, 0.0],
+      "pitch": 89.0,
+      "yaw": 45.0
+    },
+    {
+      "id": 5,
+      "name": "mid_height_orbit",
+      "position": [-60.0, 45.0, 30.0],
+      "pitch": -15.0,
+      "yaw": 60.0
+    },
+    {
+      "id": 6,
+      "name": "ceiling_corner",
+      "position": [95.0, 94.0, 95.0],
+      "pitch": -45.0,
+      "yaw": -135.0
+    }
+  ]
+}

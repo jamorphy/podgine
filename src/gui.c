@@ -74,7 +74,7 @@ void draw_nuklear_gui(World* world) {
                 clear_scene(world);                
             }
             if (nk_button_label(nk_ctx, "load default scene")) {
-                load_scene(world, "default_scene.json");
+                load_scene(world, "vertical.json");
             }
             nk_layout_row_dynamic(nk_ctx, 20, 1);
             nk_label(nk_ctx, "<In Editor Mode>", NK_TEXT_CENTERED);

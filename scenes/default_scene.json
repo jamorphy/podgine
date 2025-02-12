@@ -1,0 +1,199 @@
+{
+  "scene_version": 1,
+  "entities": [
+    {
+      "id": 1,
+      "components": {
+        "transform": {
+          "position": [0.0, 1.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "components": {
+        "transform": {
+          "position": [85.0, 12.5, -73.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [25.0, 0.5, 25.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "components": {
+        "transform": {
+          "position": [-92.0, 15.0, 82.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [0.5, 20.0, 0.5]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "components": {
+        "transform": {
+          "position": [42.0, 5.25, 94.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [15.0, 10.25, 3.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "components": {
+        "transform": {
+          "position": [-62.0, 12.0, -84.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [18.5, 18.5, 18.5]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "components": {
+        "transform": {
+          "position": [-45.0, 8.0, 15.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [22.0, 3.0, 12.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "components": {
+        "transform": {
+          "position": [98.0, 25.0, -12.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [2.0, 25.0, 2.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "components": {
+        "transform": {
+          "position": [15.0, 3.0, -95.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [8.0, 6.0, 24.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "components": {
+        "transform": {
+          "position": [-75.0, 10.0, 45.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [5.0, 20.0, 5.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "components": {
+        "transform": {
+          "position": [65.0, 15.0, 25.0],
+          "rotation": [0.0, 0.0, 0.0],
+          "scale": [15.0, 15.0, 15.0]
+        },
+        "mesh": {
+          "type": "cube"
+        },
+        "material": {
+          "type": "basic"
+        }
+      }
+    },
+{
+  "id": 11,
+  "components": {
+    "transform": {
+      "position": [0.0, 20.0, -50.0],
+      "rotation": [0.0, 0.0, 0.0],
+      "scale": [40.0, 40.0, 1.0]
+    },
+    "mesh": {
+      "type": "image",
+      "image_path": "assets/farm.jpg"
+    },
+    "material": {
+      "type": "basic"
+    }
+  }
+}
+  ],
+  "cameras": [
+    {
+      "id": 0,
+      "name": "editor_camera",
+      "position": [2.76, 8.0, -142.12],
+      "pitch": -7.0,
+      "yaw": -358.0,
+      "is_editor": true
+    },
+    {
+      "id": 1,
+      "name": "kermit left",
+      "position": [80.0, 8.0, -55.23],
+      "pitch": -7.23,
+      "yaw": -402.8
+    }
+  ]
+}
