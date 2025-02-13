@@ -1,5 +1,13 @@
 #include "render.h"
 
+/* void render_begin_frame() { */
+/*     const float w = sapp_widthf(); */
+/*     const float h = sapp_heightf(); */
+/* } */
+
+/* void render_end_frame() { */
+/* } */
+
 void compute_model_matrix(Transform* transform, mat4x4 out_matrix)
 {
     mat4x4_identity(out_matrix);

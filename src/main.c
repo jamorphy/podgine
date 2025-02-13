@@ -22,6 +22,8 @@
 
 World world;
 
+void cleanup(void);
+
 void init(void)
 {
     sg_setup(&(sg_desc){
@@ -32,6 +34,7 @@ void init(void)
     memset(&world, 0, sizeof(World));
     world.in_edit_mode = true; // start in edit mode
     world.show_grid = 0;
+    world.quit = false;
 
     init_nuklear_gui(&world);
 
@@ -124,9 +127,13 @@ void input(const sapp_event* ev)
 
 void frame(void)
 {
+    if (world.quit) {
+        cleanup();
+        exit(1);
+    }
+    
     const float w = sapp_widthf();
     const float h = sapp_heightf();
-
 
     update_camera_frame(&world);
 

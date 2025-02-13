@@ -79,6 +79,13 @@ void draw_nuklear_gui(World* world) {
             nk_layout_row_dynamic(nk_ctx, 20, 1);
             nk_label(nk_ctx, "<In Editor Mode>", NK_TEXT_CENTERED);
         }
+
+        nk_layout_row_static(nk_ctx, 30, 80, 1);
+        if (nk_button_label(nk_ctx, "exit")) {
+            world->quit = true;
+        }
+
+        
     }
     snk_render(sapp_width(), sapp_height());
     nk_end(nk_ctx);

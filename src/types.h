@@ -97,4 +97,6 @@ typedef struct World {
     Renderable renderables[1000];
     uint32_t renderable_count;
     struct nk_context* ctx;
+
+    bool quit;
 } World;
