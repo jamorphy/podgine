@@ -36,7 +36,7 @@ void draw_nuklear_gui(World* world) {
         snprintf(buffer, sizeof(buffer), "Pitch: %.2f° Yaw: %.2f°", world->camera.pitch, world->camera.yaw);
         nk_label(nk_ctx, buffer, NK_TEXT_LEFT);    
     
-        snprintf(buffer, sizeof(buffer), "X: %.2f Y: %.2f Z: %2.f", world->camera.position[0], world->camera.position[1], world->camera.position[2]);
+        snprintf(buffer, sizeof(buffer), "X: %.2f Y: %.2f Z: %.2f", world->camera.position[0], world->camera.position[1], world->camera.position[2]);
         nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
 
         nk_layout_row_dynamic(nk_ctx, 20, 1);

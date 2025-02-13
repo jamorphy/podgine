@@ -240,3 +240,138 @@ bool load_scene(World* world, const char* filename) {
     
     return true;
 }
+
+/* bool save_scene(World* world, const char* filename) { */
+/*     // Create root JSON object */
+/*     cJSON* root = cJSON_CreateObject(); */
+/*     if (!root) { */
+/*         fprintf(stderr, "Failed to create JSON object\n"); */
+/*         return false; */
+/*     } */
+
+/*     // Add scene version */
+/*     cJSON_AddNumberToObject(root, "scene_version", 1); */
+
+/*     // Create entities array */
+/*     cJSON* entities = cJSON_AddArrayToObject(root, "entities"); */
+/*     if (!entities) { */
+/*         fprintf(stderr, "Failed to create entities array\n"); */
+/*         cJSON_Delete(root); */
+/*         return false; */
+/*     } */
+
+/*     // Add each entity */
+/*     for (uint32_t i = 0; i < world->entity_count; i++) { */
+/*         Entity* entity = &world->entities[i]; */
+/*         Renderable* renderable = &world->renderables[i]; */
+
+/*         cJSON* entity_obj = cJSON_CreateObject(); */
+/*         cJSON_AddNumberToObject(entity_obj, "id", entity->id); */
+
+/*         // Create components object */
+/*         cJSON* components = cJSON_CreateObject(); */
+
+/*         // Add transform component */
+/*         cJSON* transform = cJSON_CreateObject(); */
+/*         cJSON* position = cJSON_CreateArray(); */
+/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(entity->transform.position[0])); */
+/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(entity->transform.position[1])); */
+/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(entity->transform.position[2])); */
+/*         cJSON_AddItemToObject(transform, "position", position); */
+
+/*         cJSON* rotation = cJSON_CreateArray(); */
+/*         cJSON_AddItemToArray(rotation, cJSON_CreateNumber(0.0)); // Currently not storing rotation */
+/*         cJSON_AddItemToArray(rotation, cJSON_CreateNumber(0.0)); */
+/*         cJSON_AddItemToArray(rotation, cJSON_CreateNumber(0.0)); */
+/*         cJSON_AddItemToObject(transform, "rotation", rotation); */
+
+/*         cJSON* scale = cJSON_CreateArray(); */
+/*         cJSON_AddItemToArray(scale, cJSON_CreateNumber(entity->transform.scale[0])); */
+/*         cJSON_AddItemToArray(scale, cJSON_CreateNumber(entity->transform.scale[1])); */
+/*         cJSON_AddItemToArray(scale, cJSON_CreateNumber(entity->transform.scale[2])); */
+/*         cJSON_AddItemToObject(transform, "scale", scale); */
+
+/*         cJSON_AddItemToObject(components, "transform", transform); */
+
+/*         // Add mesh component */
+/*         cJSON* mesh = cJSON_CreateObject(); */
+/*         if (renderable->mesh && renderable->mesh->type == MESH_IMAGE) { */
+/*             cJSON_AddStringToObject(mesh, "type", "image"); */
+/*             cJSON_AddStringToObject(mesh, "image_path", renderable->mesh->image_path); */
+/*         } else { */
+/*             cJSON_AddStringToObject(mesh, "type", "cube"); */
+/*         } */
+/*         cJSON_AddItemToObject(components, "mesh", mesh); */
+
+/*         // Add material component */
+/*         cJSON* material = cJSON_CreateObject(); */
+/*         cJSON_AddStringToObject(material, "type", "basic"); */
+/*         cJSON_AddItemToObject(components, "material", material); */
+
+/*         cJSON_AddItemToObject(entity_obj, "components", components); */
+/*         cJSON_AddItemToArray(entities, entity_obj); */
+/*     } */
+
+/*     // Create cameras array */
+/*     cJSON* cameras = cJSON_AddArrayToObject(root, "cameras"); */
+/*     if (!cameras) { */
+/*         fprintf(stderr, "Failed to create cameras array\n"); */
+/*         cJSON_Delete(root); */
+/*         return false; */
+/*     } */
+
+/*     // Add each camera */
+/*     for (int i = 0; i < world->camera_count; i++) { */
+/*         Camera* cam = &world->cameras[i]; */
+/*         cJSON* camera = cJSON_CreateObject(); */
+
+/*         cJSON_AddNumberToObject(camera, "id", cam->id); */
+/*         cJSON_AddStringToObject(camera, "name", cam->name); */
+
+/*         cJSON* position = cJSON_CreateArray(); */
+/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(cam->position[0])); */
+/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(cam->position[1])); */
+/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(cam->position[2])); */
+/*         cJSON_AddItemToObject(camera, "position", position); */
+
+/*         cJSON_AddNumberToObject(camera, "pitch", cam->pitch); */
+/*         cJSON_AddNumberToObject(camera, "yaw", cam->yaw); */
+        
+/*         if (i == 0) { */
+/*             cJSON_AddBoolToObject(camera, "is_editor", true); */
+/*         } */
+
+/*         cJSON_AddItemToArray(cameras, camera); */
+/*     } */
+
+/*     // Convert to string */
+/*     char* json_string = cJSON_Print(root); */
+/*     if (!json_string) { */
+/*         fprintf(stderr, "Failed to convert JSON to string\n"); */
+/*         cJSON_Delete(root); */
+/*         return false; */
+/*     } */
+
+/*     // Build full path */
+/*     char filepath[256]; */
+/*     snprintf(filepath, sizeof(filepath), "scenes/%s", filename); */
+
+/*     // Open file for writing */
+/*     FILE* file = fopen(filepath, "w"); */
+/*     if (!file) { */
+/*         fprintf(stderr, "Failed to open file for writing: %s\n", filepath); */
+/*         free(json_string); */
+/*         cJSON_Delete(root); */
+/*         return false; */
+/*     } */
+
+/*     // Write to file */
+/*     fputs(json_string, file); */
+/*     fclose(file); */
+
+/*     // Cleanup */
+/*     free(json_string); */
+/*     cJSON_Delete(root); */
+
+/*     return true; */
+/* } */

@@ -5,7 +5,6 @@
 #include <math.h>
 
 #include "linmath.h"
-//#include "utils.h"
 #include "utils_math.h"
 
 #define SOKOL_METAL
@@ -20,6 +19,8 @@
 #include "gui.h"
 #include "render.h"
 #include "character.h"
+
+#include "../libs/sokol/sokol_debugtext.h"
 
 World world;
 
@@ -39,18 +40,17 @@ void init(void)
 
     init_nuklear_gui(&world);
 
+    render_init();
+
     create_and_set_grid(&world);
     
-    /* create_cube(&world, (vec3) { 5.0f, 5.0f, 5.0f },    (vec3) { 2.0f, 2.0f, 2.0f }); */
-    /* create_cube(&world, (vec3) { -15.0f, 10.0f, 9.0f }, (vec3) { 3.0f, 3.0f, 4.0f }); */
+    create_img(&world, "assets/kermit.jpg", (vec3) {0.0f, -5.0f, 0.0f}, (vec3) {75.0f, 75.0f, 75.0f});
+    create_img(&world, "assets/farm.jpg", (vec3) {-113.0f, 0.0f, 124.0f}, (vec3) {75.0f, 75.0f, 75.0f});
 
-    /* create_img(&world, "assets/kermit.jpg", (vec3) {0.0f, -5.0f, 0.0f}, (vec3) {75.0f, 75.0f, 75.0f}); */
-    /* create_img(&world, "assets/farm.jpg", (vec3) {-113.0f, 0.0f, 124.0f}, (vec3) {75.0f, 75.0f, 75.0f}); */
-
-    create_character(&world, "kermit_da_frog", "KERMIT GUY");
+    create_character(&world, "assets/buu2.jpeg", "kermit_da_frog", "KERMIT GUY");
 
     // DEFAULT EDITOR CAM
-    create_camera(&world, 2.76f, 8.0f, -142.12f, -7.0f, -358.0f, "default camera");
+    create_camera(&world, 82.76f, 75.0f, -106.12f, -30.0f, -395.0f, "default camera");
     
     create_camera(&world, 80.0f, 8.0f, -55.23f, -7.23f, -402.8f, "kermit left");
     create_camera(&world, -101.0f, 8.0f, 57.32f, -5.13f, -361.86f, "farm");
@@ -158,6 +158,8 @@ void frame(void)
             .swapchain = sglue_swapchain()
         });
 
+    //render_text(10.0f, 10.0f, "subtitles go here probably?!");
+
     if (world.show_grid) {
         render_grid(&world, world.camera.view, proj);
     }
@@ -165,6 +167,7 @@ void frame(void)
     render_cameras(&world, world.camera.view, proj);
     draw_nuklear_gui(&world);
 
+    sdtx_draw();
     sg_end_pass();
     sg_commit();
 }

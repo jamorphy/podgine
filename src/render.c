@@ -1,5 +1,50 @@
 #include "render.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#define SOKOL_METAL
+#include "../libs/sokol/sokol_gfx.h"
+#define SOKOL_DEBUGTEXT_IMPL
+#include "../libs/sokol/sokol_debugtext.h"
+
+#include "render.h"
+
+// Private font definitions
+#define FONT_KC853 (0)
+#define FONT_KC854 (1)
+#define FONT_Z1013 (2)
+#define FONT_CPC   (3)
+#define FONT_C64   (4)
+#define FONT_ORIC  (5)
+
+void render_init(void) {
+    sdtx_setup(&(sdtx_desc_t){
+        .fonts = {
+            [FONT_KC853] = sdtx_font_kc853(),
+            [FONT_KC854] = sdtx_font_kc854(),
+            [FONT_Z1013] = sdtx_font_z1013(),
+            [FONT_CPC]   = sdtx_font_cpc(),
+            [FONT_C64]   = sdtx_font_c64(),
+            [FONT_ORIC]  = sdtx_font_oric()
+        }
+    });
+}
+
+void render_text(float x, float y, const char* text) {
+    sdtx_pos(x, y);
+    sdtx_font(FONT_C64);
+    sdtx_color3b(255, 255, 255);
+    sdtx_puts(text);
+}
+
+void render_text_colored(float x, float y, const char* text, uint8_t r, uint8_t g, uint8_t b) {
+    sdtx_pos(x, y);
+    sdtx_font(FONT_C64);
+    sdtx_color3b(r, g, b);
+    sdtx_puts(text);
+}
+
 /* void render_begin_frame() { */
 /*     const float w = sapp_widthf(); */
 /*     const float h = sapp_heightf(); */

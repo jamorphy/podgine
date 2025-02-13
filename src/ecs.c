@@ -50,7 +50,7 @@ void create_and_set_grid(World* world)
 
     // Create grid lines
     for (int i = -GRID_SIZE; i <= GRID_SIZE; i++) {
-        float color_intensity = (i == 0) ? 1.0f : 0.5f;  // Make center lines brighter
+        float color_intensity = 1.0f;
 
         // Lines along X axis
         vertices[vertex_idx++] = i * GRID_SPACE;

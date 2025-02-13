@@ -6,7 +6,7 @@ FRAMEWORKS = -framework Metal -framework MetalKit -framework Cocoa -framework Au
 
 SRCS = src/main.c src/ecs.c src/utils.c src/camera.c src/gui.c src/http_client.c libs/sokol/sokol.m libs/cJSON/cJSON.c src/scene.c src/character.c src/render.c
 OBJS = src/main.o src/ecs.o src/utils.o src/camera.o src/gui.o src/http_client.o libs/sokol/sokol.o libs/cJSON/cJSON.o src/scene.o src/character.o src/render.o
-LIBS = -lcurl
+LIBS = -lcurl -lfreetype
 
 TARGET = demo
 

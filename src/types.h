@@ -29,7 +29,7 @@ typedef struct {
     Material *material;
 } Renderable;
 
-typedef struct {
+typedef struct Transform {
     vec3 position;
     vec3 rotation;
     vec3 scale;
