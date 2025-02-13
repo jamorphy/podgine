@@ -24,3 +24,7 @@ Material* create_cube_material(void);
 Entity* create_cube(World* world, vec3 pos, vec3 scale);
 
 void init_camera_visualization(World* world);
+
+void entity_set_transform_xyz(Entity* entity, vec3 xyz);
+void entity_set_transform_rot(Entity* entity, vec3 rot);
+void entity_set_transform_scale(Entity* entity, vec3 scale);

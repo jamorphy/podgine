@@ -84,8 +84,6 @@ void draw_nuklear_gui(World* world) {
         if (nk_button_label(nk_ctx, "exit")) {
             world->quit = true;
         }
-
-        
     }
     snk_render(sapp_width(), sapp_height());
     nk_end(nk_ctx);

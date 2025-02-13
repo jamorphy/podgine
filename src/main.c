@@ -19,6 +19,7 @@
 #include "ecs.h"
 #include "gui.h"
 #include "render.h"
+#include "character.h"
 
 World world;
 
@@ -39,11 +40,14 @@ void init(void)
     init_nuklear_gui(&world);
 
     create_and_set_grid(&world);
-    create_cube(&world, (vec3) { 5.0f, 5.0f, 5.0f },    (vec3) { 2.0f, 2.0f, 2.0f });
-    create_cube(&world, (vec3) { -15.0f, 10.0f, 9.0f }, (vec3) { 3.0f, 3.0f, 4.0f });
+    
+    /* create_cube(&world, (vec3) { 5.0f, 5.0f, 5.0f },    (vec3) { 2.0f, 2.0f, 2.0f }); */
+    /* create_cube(&world, (vec3) { -15.0f, 10.0f, 9.0f }, (vec3) { 3.0f, 3.0f, 4.0f }); */
 
-    create_img(&world, "assets/kermit.jpg", (vec3) {0.0f, -5.0f, 0.0f}, (vec3) {75.0f, 75.0f, 75.0f});
-    create_img(&world, "assets/farm.jpg", (vec3) {-113.0f, 0.0f, 124.0f}, (vec3) {75.0f, 75.0f, 75.0f});
+    /* create_img(&world, "assets/kermit.jpg", (vec3) {0.0f, -5.0f, 0.0f}, (vec3) {75.0f, 75.0f, 75.0f}); */
+    /* create_img(&world, "assets/farm.jpg", (vec3) {-113.0f, 0.0f, 124.0f}, (vec3) {75.0f, 75.0f, 75.0f}); */
+
+    create_character(&world, "kermit_da_frog", "KERMIT GUY");
 
     // DEFAULT EDITOR CAM
     create_camera(&world, 2.76f, 8.0f, -142.12f, -7.0f, -358.0f, "default camera");

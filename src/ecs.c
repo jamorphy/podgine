@@ -340,6 +340,7 @@ Material* create_cube_material(void)
     return material;
 }
 
+// TODO: move to camera.(c)(h)
 void init_camera_visualization(World* world)
 {
     sg_image texture = create_image_texture("assets/camera.jpg");

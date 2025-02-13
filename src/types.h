@@ -75,19 +75,20 @@ typedef struct {
     bool key_w, key_a, key_s, key_d, key_spc, key_shift;
 } CameraControls;
 
+// TODO: should i stop using fixed arrays
 typedef struct World {
     Entity entities[1000];
     uint32_t entity_count;
     uint32_t next_entity_id;
     
-    // maybe move camera stuff to another struct
+    // TODO: maybe move camera stuff to another struct
     Camera cameras[MAX_CAMERAS];
     int camera_count;
     uint32_t next_camera_id;
     Camera camera;
     CameraControls control;
 
-    // maybe move state to another struct too
+    // TODO: maybe move state to another struct too
     bool in_edit_mode;
     nk_bool show_grid;
 
