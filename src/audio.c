@@ -108,22 +108,85 @@ bool audio_is_playing(void) {
     return state.is_playing;
 }
 
-int main(void) {
-    printf("Audio Test Starting...\n");
+/* int main(void) { */
+/*     printf("Audio Test Starting...\n"); */
     
-    audio_init();
+/*     audio_init(); */
     
-    // Just test with one file for now
-    printf("Playing audio file...\n");
-    audio_play_file("host_6.mp3");  // Put your MP3 file in same directory
+/*     audio_play_file("host_0.mp3");  // Put your MP3 file in same directory */
     
-    while (audio_is_playing()) {
-        printf("Playing...\n");
-        usleep(500000);  // 500ms sleep
-    }
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
+
+/*     audio_play_file("guest_1.mp3");  // Put your MP3 file in same directory */
     
-    printf("Playback complete, shutting down...\n");
-    audio_shutdown();
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
     
-    return 0;
-}
+/*     // Just test with one file for now */
+/*     printf("Playing audio file...\n"); */
+/*     audio_play_file("host_2.mp3");  // Put your MP3 file in same directory */
+    
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
+
+/*     audio_play_file("guest_3.mp3");  // Put your MP3 file in same directory */
+    
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
+
+/*     audio_play_file("host_4.mp3");  // Put your MP3 file in same directory */
+    
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
+
+/*     audio_play_file("guest_5.mp3");  // Put your MP3 file in same directory */
+    
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
+
+/*         audio_play_file("host_6.mp3");  // Put your MP3 file in same directory */
+    
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
+
+/*     audio_play_file("guest_7.mp3");  // Put your MP3 file in same directory */
+    
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
+
+/*         audio_play_file("host_8.mp3");  // Put your MP3 file in same directory */
+    
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
+
+/*     audio_play_file("guest_9.mp3");  // Put your MP3 file in same directory */
+    
+/*     while (audio_is_playing()) { */
+/*         printf("Playing...\n"); */
+/*         usleep(500000);  // 500ms sleep */
+/*     } */
+    
+/*     printf("Playback complete, shutting down...\n"); */
+/*     audio_shutdown(); */
+    
+/*     return 0; */
+/* } */
