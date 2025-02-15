@@ -1,6 +1,8 @@
-#include "gui.h"
-
 #include <stdlib.h>
+#include "gui.h"
+#include "camera.h"
+#include "scene.h"
+#include "character.h"
 
 void reset_movement_keys(CameraControls* control) {
     control->key_w = false;

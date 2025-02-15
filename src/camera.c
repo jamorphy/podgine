@@ -1,8 +1,14 @@
 #include "camera.h"
+#include "constants.h"
+#include "ecs.h"
+#include "character.h"
+#include "utils.h"
 
 #define TO_RAD(deg) ((deg) * M_PI / 180.0f)
 
-void update_camera_frame(World* world) {
+// TODO: this fn is just honestly bad
+void update_camera_frame(World* world)
+{
     float move_speed = 0.5f;
 
     float pitch_rad = TO_RAD(world->active_camera.pitch);
@@ -58,38 +64,40 @@ void update_camera_frame(World* world) {
                    (vec3){0.0f, 1.0f, 0.0f});
 }
 
-Camera* create_camera(World* world,
-                  float x, float y, float z,  // Exact camera position
-                  float pitch, float yaw      // Camera orientation
-) {
-    if (world->camera_count >= 1000) {
+Camera* get_next_camera(World* world)
+{
+    // TODO: what is this exit bro
+    if (world->camera_count >= MAX_CAMERAS) {
         printf("Warning: Maximum number of cameras reached\n");
         return NULL;
     }
-
-    Camera* new_cam = &world->cameras[world->camera_count];
-
-    new_cam->position[0] = x;
-    new_cam->position[1] = y;
-    new_cam->position[2] = z;
-    new_cam->pitch = pitch;
-    new_cam->yaw = yaw;
-
-    new_cam->id = world->next_camera_id++;
+    
+    Camera* cam = &world->cameras[world->camera_count];
+    cam->id = world->next_camera_id++;
     world->camera_count++;
-    return new_cam;
+    return cam;
+}
+
+Camera* create_camera(World* world,
+                      float x, float y, float z,
+                      float pitch, float yaw)
+{    
+    Camera* camera = get_next_camera(world);
+    camera->position[0] = x;
+    camera->position[1] = y;
+    camera->position[2] = z;
+    camera->pitch = pitch;
+    camera->yaw = yaw;    
+    return camera;
 }
 
 void create_and_add_camera(World* world,
-                  float x, float y, float z,  // Exact camera position
-                  float pitch, float yaw,      // Camera orientation
-                  const char* name) {
-    if (world->camera_count >= 16) {
-        printf("Warning: Maximum number of cameras reached\n");
-        return;
-    }
+                           float x, float y, float z,
+                           float pitch, float yaw,
+                           const char* name)
+{
 
-    Camera* new_cam = &world->cameras[world->camera_count];
+    Camera* new_cam = get_next_camera(world);
 
     // Store exact position
     new_cam->position[0] = x;
@@ -100,17 +108,10 @@ void create_and_add_camera(World* world,
 
     strncpy(new_cam->name, name, 31);
     new_cam->name[31] = '\0';
-
-    new_cam->id = world->next_camera_id++;
-    world->camera_count++;
-    printf("created camera\n");
 }
 
-void create_camera_at_current_position(World* world) {
-    if (world->camera_count >= 16) {
-        printf("Warning: Maximum number of cameras reached\n");
-        return;
-    }
+void create_camera_at_current_position(World* world)
+{    
 
     // Generate a default name for the new camera
     char camera_name[32];
@@ -125,4 +126,34 @@ void create_camera_at_current_position(World* world) {
                  current.pitch,
                  current.yaw,
                  camera_name);
+}
+
+
+void switch_to_character_camera(World *world, const char* character_id)
+{
+    // TODO: graceful exit
+    Character* character = get_character(world, character_id);
+    if (character == NULL) {
+        printf("failed to get character \n");
+    }
+    world->active_camera.position[0] = character->cam->position[0];
+    world->active_camera.position[1] = character->cam->position[1];
+    world->active_camera.position[2] = character->cam->position[2];
+
+    world->active_camera.pitch = character->cam->pitch;
+    world->active_camera.yaw = character->cam->yaw;
+}
+
+void init_camera_renderable(World* world)
+{
+    sg_image texture = create_image_texture("assets/camera.jpg");
+
+    // Create renderable
+    if (world->renderable_count >= 1000) {
+        printf("Exceeded max renderable count\n");
+    }
+
+    // Set up mesh and material
+    world->camera_visualization_renderable.mesh = create_quad_mesh(texture);
+    world->camera_visualization_renderable.material = create_textured_material();
 }

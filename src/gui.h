@@ -1,5 +1,7 @@
 #pragma once
 
+#include "types.h"
+
 #define NUKLEAR_IMPLEMENTATION
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -13,11 +15,6 @@
 #include "../libs/sokol/sokol_app.h"
 #include "../libs/sokol/sokol_gfx.h"
 #include "../libs/sokol/sokol_nuklear.h"
-
-#include "camera.h"
-#include "types.h"
-#include "scene.h"
-#include "character.h"
 
 void init_nuklear_gui(World* world);
 void draw_nuklear_gui(World* world);

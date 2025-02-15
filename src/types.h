@@ -63,9 +63,9 @@ typedef struct {
 
 typedef struct Character {
     uint32_t id;
-    const char* character_id;        // e.g. "host_1" 
-    const char* display_name;   // e.g. "Dr. Sarah Chen"
-    Camera* cam;      // Each character's dedicated camera
+    const char* character_id;
+    const char* display_name;
+    Camera* cam;
 } Character;
 
 typedef struct Entity {

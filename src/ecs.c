@@ -1,10 +1,11 @@
-#include "ecs.h"
-
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
+#include "ecs.h"
 #include "utils.h"
 
+// TODO: what is this ?
 #define COMPONENTS_PER_VERTEX 7 // 3 pos floats + 4 color floats
 
 // TODO: Destroy grid fn
@@ -338,21 +339,6 @@ Material* create_cube_material(void)
     free(fs_source);
 
     return material;
-}
-
-// TODO: move to camera.(c)(h)
-void init_camera_visualization(World* world)
-{
-    sg_image texture = create_image_texture("assets/camera.jpg");
-
-    // Create renderable
-    if (world->renderable_count >= 1000) {
-        printf("Exceeded max renderable count\n");
-    }
-
-    // Set up mesh and material
-    world->camera_visualization_renderable.mesh = create_quad_mesh(texture);
-    world->camera_visualization_renderable.material = create_textured_material();
 }
 
 void destroy_mesh(Mesh* mesh)

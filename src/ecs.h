@@ -3,7 +3,6 @@
 #include "../libs/sokol/sokol_gfx.h"
 #include "../libs/sokol/sokol_glue.h"
 #include "../libs/linmath/linmath.h"
-#include <stdint.h>
 
 #include "types.h"
 
@@ -22,8 +21,6 @@ Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale);
 Mesh* create_cube_mesh(void);
 Material* create_cube_material(void);
 Entity* create_cube(World* world, vec3 pos, vec3 scale);
-
-void init_camera_visualization(World* world);
 
 void entity_set_transform_xyz(Entity* entity, vec3 xyz);
 void entity_set_transform_rot(Entity* entity, vec3 rot);

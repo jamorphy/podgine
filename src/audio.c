@@ -1,13 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+
 #define SOKOL_AUDIO_IMPL
 #include "../libs/sokol/sokol_audio.h"
 #define DR_MP3_IMPLEMENTATION
 #include "../libs/dr_mp3.h"
 #include "audio.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
 
 static struct {
     float* audio_buffer;

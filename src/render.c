@@ -1,14 +1,11 @@
-#include "render.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "render.h"
 #define SOKOL_METAL
 #include "../libs/sokol/sokol_gfx.h"
 #define SOKOL_DEBUGTEXT_IMPL
 #include "../libs/sokol/sokol_debugtext.h"
-
-#include "render.h"
 
 // Private font definitions
 #define FONT_KC853 (0)

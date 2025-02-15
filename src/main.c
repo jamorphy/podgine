@@ -80,7 +80,7 @@ void init(void)
     /* create_and_add_camera(&world, 80.0f, 8.0f, -55.23f, -7.23f, -402.8f, "kermit left"); */
     /* create_and_add_camera(&world, -101.0f, 8.0f, 57.32f, -5.13f, -361.86f, "farm"); */
 
-    init_camera_visualization(&world);
+    init_camera_renderable(&world);
     world.active_camera = world.cameras[EDITOR_CAMERA_INDEX];
 }
 

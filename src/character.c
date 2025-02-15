@@ -1,4 +1,7 @@
+#include <stdlib.h>
 #include "character.h"
+#include "ecs.h"
+#include "camera.h"
 #include "utils.h"
 
 void parse_script(cJSON *json) {
@@ -45,21 +48,6 @@ Character* get_character(World *world, const char* character_id)
         }
     }
     return NULL;
-}
-
-void switch_to_character_camera(World *world, const char* character_id)
-{
-    // TODO: graceful exit
-    Character* character = get_character(world, character_id);
-    if (character == NULL) {
-        printf("failed to get character \n");
-    }
-    world->active_camera.position[0] = character->cam->position[0];
-    world->active_camera.position[1] = character->cam->position[1];
-    world->active_camera.position[2] = character->cam->position[2];
-
-    world->active_camera.pitch = character->cam->pitch;
-    world->active_camera.yaw = character->cam->yaw;
 }
 
 Entity* create_character(World* world,

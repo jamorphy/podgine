@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "../libs/sokol/sokol_gfx.h"
 
 char* read_text_file(const char* filepath);

@@ -1,6 +1,7 @@
+#include <stdlib.h>
+#include <stdbool.h>
 #include "../libs/cJSON/cJSON.h"
 
-#include <stdlib.h>
 #include "scene.h"
 #include "ecs.h"
 #include "constants.h"
