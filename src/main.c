@@ -5,13 +5,14 @@
 #include <math.h>
 
 #include "linmath.h"
-#include "utils_math.h"
+#include "cJSON.h"
 
 #define SOKOL_METAL
 #include "sokol_app.h"
 #include "sokol_gfx.h"
 #include "sokol_glue.h"
 #include "sokol_log.h"
+#include "sokol_debugtext.h"
 
 #include "types.h"
 #include "camera.h"
@@ -19,14 +20,33 @@
 #include "gui.h"
 #include "render.h"
 #include "character.h"
+#include "scene.h"
+#include "audio.h"
 #include "utils.h"
-
-#include "../libs/sokol/sokol_debugtext.h"
-#include "cJSON.h"
+#include "utils_math.h"
 
 World world;
 
 void cleanup(void);
+
+void play_next_line(World* world) {
+    if (!world->is_playing_audio && 
+        world->current_line < world->script->line_count) {
+        
+        // Start playing the current line
+        audio_play_file(world->script->lines[world->current_line].audio_file);
+        world->is_playing_audio = true;
+    }
+    
+    // Check if current audio finished
+    if (world->is_playing_audio) {
+        if (!audio_is_playing()) {
+            // Audio finished, move to next line
+            world->is_playing_audio = false;
+            world->current_line++;
+        }
+    }
+}
 
 void init(void)
 {
@@ -40,25 +60,55 @@ void init(void)
     world.show_grid = 0;
     world.quit = false;
 
-    // todo
-    /* char* script = read_text_file("api/generated/podcast_1739576207/script.json"); */
-    /* if (!script) { */
-    /*     printf("cant read script gg\n"); */
-    /* } else { */
-    /*     printf("hers the cript: %s\n", script); */
-    /* } */
-    /* cJSON* json = cJSON_Parse(script); */
-    /* if (json == NULL) { */
-    /*     const char *error_ptr = cJSON_GetErrorPtr(); */
-    /*     if (error_ptr != NULL) { */
-    /*         printf("Error parsing JSON: %s\n", error_ptr); */
-    /*     }         */
-    /* } else { */
-    /*     parse_script(json); */
-    /*     cJSON_Delete(json); */
-    /*     free(script); */
-    /* } */
+    audio_init();
+
+    // TODO: 
+    char* script_text = read_text_file("api/generated/podcast_1739601442/script.json");
+    if (!script_text) {
+        printf("cant read script gg\n");
+    } else {
+        printf("hers the cript: %s\n", script_text);
+    }
+    cJSON* json = cJSON_Parse(script_text);
+    if (json == NULL) {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL) {
+            printf("Error parsing JSON: %s\n", error_ptr);
+        }
+    } else {
+        // Debug: Check if we can access dialogue array
+        cJSON* dialogue = cJSON_GetObjectItem(json, "dialogue");
+        if (dialogue) {
+            int count = cJSON_GetArraySize(dialogue);
+            printf("Found dialogue array with %d items\n", count);
+            
+            // Debug: Try to access first item
+            cJSON* first_item = cJSON_GetArrayItem(dialogue, 0);
+            if (first_item) {
+                cJSON* char_item = cJSON_GetObjectItem(first_item, "character");
+                if (char_item) {
+                    printf("First character: %s\n", char_item->valuestring);
+                }
+            }
+        }
+
+        parse_script(&world, json);
+        cJSON_Delete(json);
+        free(script_text);
+    }
     // end todo
+
+    if (world.script) {
+        printf("Accessing %d lines:\n", world.script->line_count);
+        for (int i = 0; i < world.script->line_count; i++) {
+            Line* currentLine = &world.script->lines[i];
+            printf("[%d] %s: %s %s\n", 
+                i,
+                currentLine->character,
+                currentLine->text,
+                currentLine->audio_file);
+        }
+    }
 
     init_nuklear_gui(&world);
     render_init();
@@ -177,6 +227,8 @@ void frame(void)
     render_cameras(&world, world.active_camera.view, proj);
     draw_nuklear_gui(&world);
 
+    play_next_line(&world);
+
     sdtx_draw();
     sg_end_pass();
     sg_commit();
@@ -184,6 +236,8 @@ void frame(void)
 
 void cleanup(void)
 {
+    audio_shutdown();
+    clear_scene(&world);
     nk_free(world.ctx);
     snk_shutdown();
     sg_shutdown();
@@ -201,7 +255,7 @@ sapp_desc sokol_main(int argc, char* argv[])
         .width = WINDOW_WIDTH,
         .height = WINDOW_HEIGHT,
         .sample_count = 4,
-        .window_title = "Cube",
+        .window_title = "podgine",
         .icon.sokol_default = false,
         .swap_interval = 1
     };

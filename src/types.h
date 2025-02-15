@@ -75,6 +75,17 @@ typedef struct Entity {
     Character* character;
 } Entity;
 
+typedef struct {
+    char* character;
+    char* text;
+    char* audio_file;
+} Line;
+
+typedef struct {
+    Line* lines;
+    int line_count;
+} Script;
+
 // TODO: should i stop using fixed arrays
 typedef struct World {
     Entity entities[1000];
@@ -98,6 +109,13 @@ typedef struct World {
     Renderable renderables[1000];
     uint32_t renderable_count;
     struct nk_context* ctx;
+
+    Script* script;
+
+    // TODO: HACKY INCOMING
+    bool is_playing_audio;
+    int current_line;  // to track which line we're on
+    // TODO: END HACKY
 
     bool quit;
 } World;

@@ -86,14 +86,6 @@ void draw_nuklear_gui(World* world) {
         if (nk_button_label(nk_ctx, "exit")) {
             world->quit = true;
         }
-
-        nk_layout_row_static(nk_ctx, 30, 80, 2);
-        if (nk_button_label(nk_ctx, "buu")) {
-            switch_to_character_camera(world, "buu_guy");
-        }
-        if (nk_button_label(nk_ctx, "kermit")) {
-            switch_to_character_camera(world, "kermit_da_frog");
-        }
     }
     snk_render(sapp_width(), sapp_height());
     nk_end(nk_ctx);

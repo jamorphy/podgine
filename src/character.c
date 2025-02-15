@@ -4,35 +4,84 @@
 #include "camera.h"
 #include "utils.h"
 
-void parse_script(cJSON *json) {
-    // Get the main objects
-    cJSON *topic = cJSON_GetObjectItem(json, "topic");
-    cJSON *timestamp = cJSON_GetObjectItem(json, "timestamp");
-    cJSON *dialogue = cJSON_GetObjectItem(json, "dialogue");
+/* void parse_script(World* world, cJSON *json) { */
+/*     // Get the main objects */
+/*     cJSON *topic = cJSON_GetObjectItem(json, "topic"); */
+/*     cJSON *timestamp = cJSON_GetObjectItem(json, "timestamp"); */
+/*     cJSON *dialogue = cJSON_GetObjectItem(json, "dialogue"); */
 
-    if (topic && timestamp) {
-        printf("Topic: %s\n", topic->valuestring);
-        printf("Timestamp: %s\n", timestamp->valuestring);
+/*     if (topic && timestamp) { */
+/*         printf("Topic: %s\n", topic->valuestring); */
+/*         printf("Timestamp: %s\n", timestamp->valuestring); */
+/*     } */
+
+/*     // Parse dialogue array */
+/*     if (dialogue) { */
+/*         int dialogue_count = cJSON_GetArraySize(dialogue); */
+        
+/*         for (int i = 0; i < dialogue_count; i++) { */
+/*             cJSON *dialogue_item = cJSON_GetArrayItem(dialogue, i); */
+            
+/*             cJSON *character = cJSON_GetObjectItem(dialogue_item, "character"); */
+/*             cJSON *text = cJSON_GetObjectItem(dialogue_item, "text"); */
+/*             cJSON *audio_file = cJSON_GetObjectItem(dialogue_item, "audio_file"); */
+            
+/*             if (character && text && audio_file) { */
+/*                 printf("\nDialogue Entry %d:\n", i); */
+/*                 printf("Character: %s\n", character->valuestring); */
+/*                 printf("Text: %s\n", text->valuestring); */
+/*                 printf("Audio File: %s\n", audio_file->valuestring); */
+/*             } */
+/*         } */
+/*     } */
+/* } */
+
+void parse_script(World* world, cJSON *json) {
+    // Allocate the script if it doesn't exist
+    if (!world->script) {
+        world->script = (Script*)malloc(sizeof(Script));
     }
 
-    // Parse dialogue array
+    // Get the dialogue array
+    cJSON *dialogue = cJSON_GetObjectItem(json, "dialogue");
+    
     if (dialogue) {
         int dialogue_count = cJSON_GetArraySize(dialogue);
+        printf("Found %d dialogue entries\n", dialogue_count);
         
+        // Allocate space for all lines
+        world->script->lines = (Line*)malloc(sizeof(Line) * dialogue_count);
+        world->script->line_count = dialogue_count;
+        
+        // Parse each dialogue entry
         for (int i = 0; i < dialogue_count; i++) {
             cJSON *dialogue_item = cJSON_GetArrayItem(dialogue, i);
             
-            cJSON *character = cJSON_GetObjectItem(dialogue_item, "character");
-            cJSON *text = cJSON_GetObjectItem(dialogue_item, "text");
-            cJSON *audio_file = cJSON_GetObjectItem(dialogue_item, "audio_file");
+            world->script->lines[i].character = strdup(cJSON_GetObjectItem(dialogue_item, "character")->valuestring);
+            world->script->lines[i].text = strdup(cJSON_GetObjectItem(dialogue_item, "text")->valuestring);
+            world->script->lines[i].audio_file = strdup(cJSON_GetObjectItem(dialogue_item, "audio_file")->valuestring);
             
-            if (character && text && audio_file) {
-                printf("\nDialogue Entry %d:\n", i);
-                printf("Character: %s\n", character->valuestring);
-                printf("Text: %s\n", text->valuestring);
-                printf("Audio File: %s\n", audio_file->valuestring);
-            }
+            // Debug print during parsing
+            printf("Parsing line %d:\n", i);
+            if (world->script->lines[i].character) 
+                printf("  Character: %s\n", world->script->lines[i].character);
+            if (world->script->lines[i].text)
+                printf("  Text: %s\n", world->script->lines[i].text);
+            if (world->script->lines[i].audio_file)
+                printf("  Audio: %s\n", world->script->lines[i].audio_file);
         }
+    }
+}
+
+void cleanup_script(Script* script) {
+    if (script) {
+        for (int i = 0; i < script->line_count; i++) {
+            free(script->lines[i].character);
+            free(script->lines[i].text);
+            free(script->lines[i].audio_file);
+        }
+        free(script->lines);
+        free(script);
     }
 }
 
