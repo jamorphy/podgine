@@ -62,7 +62,7 @@ void clear_scene(World* world) {
     
     // Restore editor camera
     world->cameras[0] = editor_camera;
-    world->camera = editor_camera;
+    world->active_camera = editor_camera;
 }
 
 bool load_scene(World* world, const char* filename) {
@@ -231,7 +231,7 @@ bool load_scene(World* world, const char* filename) {
         }
         
         // Create the camera
-        create_camera(world, x, y, z, pitch, yaw, name->valuestring);
+        create_and_add_camera(world, x, y, z, pitch, yaw, name->valuestring);
     }
     
     

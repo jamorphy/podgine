@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "ecs.h"
 
 /* void create_camera(World* world, */
 /*                    float distance, */
@@ -11,7 +12,10 @@
 /*                    float z, */
 /*                    const char* name); */
 void update_camera_frame(World* world);
-void create_camera(World* world,
+Camera* create_camera(World* world,
+                   float x, float y, float z,
+                   float pitch, float yaw);
+void create_and_add_camera(World* world,
                    float x, float y, float z,
                    float pitch, float yaw,
                    const char* name);

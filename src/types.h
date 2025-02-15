@@ -35,20 +35,6 @@ typedef struct Transform {
     vec3 scale;
 } Transform;
 
-typedef struct Character {
-    uint32_t id;
-    const char* character_id;        // e.g. "host_1" 
-    const char* display_name;   // e.g. "Dr. Sarah Chen"
-    uint32_t camera_id;        // Each character's dedicated camera
-} Character;
-
-typedef struct Entity {
-    uint32_t id;
-    Transform transform;
-    Renderable* renderable;
-    Character* character;
-} Entity;
-
 typedef struct {
     uint32_t id;
     vec3 front;
@@ -58,7 +44,7 @@ typedef struct {
     vec3 up;
     mat4x4 view;
     mat4x4 proj;
-    float distance;
+    //float distance;
     float pitch;
     float yaw;
     vec3 forward;
@@ -75,6 +61,20 @@ typedef struct {
     bool key_w, key_a, key_s, key_d, key_spc, key_shift;
 } CameraControls;
 
+typedef struct Character {
+    uint32_t id;
+    const char* character_id;        // e.g. "host_1" 
+    const char* display_name;   // e.g. "Dr. Sarah Chen"
+    Camera* cam;      // Each character's dedicated camera
+} Character;
+
+typedef struct Entity {
+    uint32_t id;
+    Transform transform;
+    Renderable* renderable;
+    Character* character;
+} Entity;
+
 // TODO: should i stop using fixed arrays
 typedef struct World {
     Entity entities[1000];
@@ -85,7 +85,7 @@ typedef struct World {
     Camera cameras[MAX_CAMERAS];
     int camera_count;
     uint32_t next_camera_id;
-    Camera camera;
+    Camera active_camera;
     CameraControls control;
 
     // TODO: maybe move state to another struct too

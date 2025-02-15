@@ -33,10 +33,10 @@ void draw_nuklear_gui(World* world) {
     
         char buffer[64];
     
-        snprintf(buffer, sizeof(buffer), "Pitch: %.2f° Yaw: %.2f°", world->camera.pitch, world->camera.yaw);
+        snprintf(buffer, sizeof(buffer), "Pitch: %.2f° Yaw: %.2f°", world->active_camera.pitch, world->active_camera.yaw);
         nk_label(nk_ctx, buffer, NK_TEXT_LEFT);    
     
-        snprintf(buffer, sizeof(buffer), "X: %.2f Y: %.2f Z: %.2f", world->camera.position[0], world->camera.position[1], world->camera.position[2]);
+        snprintf(buffer, sizeof(buffer), "X: %.2f Y: %.2f Z: %.2f", world->active_camera.position[0], world->active_camera.position[1], world->active_camera.position[2]);
         nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
 
         nk_layout_row_dynamic(nk_ctx, 20, 1);
@@ -48,17 +48,17 @@ void draw_nuklear_gui(World* world) {
             if (nk_button_label(nk_ctx, buffer)) {
                 reset_movement_keys(&world->control);
                 if (world->in_edit_mode) {
-                    world->cameras[0] = world->camera;
+                    world->cameras[0] = world->active_camera;
                     world->in_edit_mode = false;
                 }
                 
                 Camera* selected = &world->cameras[i];
-                world->camera.position[0] = selected->position[0];
-                world->camera.position[1] = selected->position[1];
-                world->camera.position[2] = selected->position[2];
-                world->camera.distance = selected->distance;
-                world->camera.pitch = selected->pitch;
-                world->camera.yaw = selected->yaw;
+                world->active_camera.position[0] = selected->position[0];
+                world->active_camera.position[1] = selected->position[1];
+                world->active_camera.position[2] = selected->position[2];
+                //world->camera.distance = selected->distance;
+                world->active_camera.pitch = selected->pitch;
+                world->active_camera.yaw = selected->yaw;
                 world->in_edit_mode = false;
             }
         }
@@ -83,6 +83,14 @@ void draw_nuklear_gui(World* world) {
         nk_layout_row_static(nk_ctx, 30, 80, 1);
         if (nk_button_label(nk_ctx, "exit")) {
             world->quit = true;
+        }
+
+        nk_layout_row_static(nk_ctx, 30, 80, 2);
+        if (nk_button_label(nk_ctx, "buu")) {
+            switch_to_character_camera(world, "buu_guy");
+        }
+        if (nk_button_label(nk_ctx, "kermit")) {
+            switch_to_character_camera(world, "kermit_da_frog");
         }
     }
     snk_render(sapp_width(), sapp_height());

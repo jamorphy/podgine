@@ -17,6 +17,7 @@
 #include "camera.h"
 #include "types.h"
 #include "scene.h"
+#include "character.h"
 
 void init_nuklear_gui(World* world);
 void draw_nuklear_gui(World* world);
