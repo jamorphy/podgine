@@ -36,7 +36,7 @@ void init(void)
         });
     
     memset(&world, 0, sizeof(World));
-    world.in_edit_mode = true; // start in edit mode
+    world.in_edit_mode = true;
     world.show_grid = 0;
     world.quit = false;
 
@@ -61,25 +61,12 @@ void init(void)
     // end todo
 
     init_nuklear_gui(&world);
-
     render_init();
-
-    create_and_set_grid(&world);
-    
-    /* create_img(&world, "assets/kermit.jpg", (vec3) {0.0f, -5.0f, 0.0f}, (vec3) {75.0f, 75.0f, 75.0f}); */
-    /* create_img(&world, "assets/farm.jpg", (vec3) {-113.0f, 0.0f, 124.0f}, (vec3) {75.0f, 75.0f, 75.0f}); */
-
+    // TODO: this create_ api is terrible
+    create_and_set_grid(&world);    
     create_and_add_camera(&world, 82.76f, 75.0f, -106.12f, -30.0f, -395.0f, "default camera");
-
     create_character_poscam(&world, "assets/buu2.jpeg", "buu_guy", "majin buu", (vec3) { 5.0f, 5.0f, 20.0f }, (vec3) { 4.22f, 4.0f, 35.76f }, (vec2){8.25f, -180.15f});
     create_character_poscam(&world, "assets/kermit.jpg", "kermit_da_frog", "Kermit the frog", (vec3) { 30.0f, 0.0f, 30.0f }, (vec3) { 30.0f, 4.0f, 46.12f }, (vec2) { -9.50f, -180.0f});
-
-    // DEFAULT EDITOR CAM
-    
-    
-    /* create_and_add_camera(&world, 80.0f, 8.0f, -55.23f, -7.23f, -402.8f, "kermit left"); */
-    /* create_and_add_camera(&world, -101.0f, 8.0f, 57.32f, -5.13f, -361.86f, "farm"); */
-
     init_camera_renderable(&world);
     world.active_camera = world.cameras[EDITOR_CAMERA_INDEX];
 }
@@ -135,9 +122,8 @@ void input(const sapp_event* ev)
 
             // Increase sensitivity for more noticeable movement
             world.active_camera.yaw += -delta_x * 0.5f;
-            world.active_camera.pitch += -delta_y * 0.5f;  // Negative for intuitive up/down looking
+            world.active_camera.pitch += -delta_y * 0.5f;
                 
-            // Clamp pitch to prevent camera flipping
             world.active_camera.pitch = clamp(world.active_camera.pitch, -89.0f, 89.0f);
 
             world.control.last_mouse_x = ev->mouse_x;
