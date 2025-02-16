@@ -36,43 +36,6 @@
 /*     } */
 /* } */
 
-void parse_script(World* world, cJSON *json) {
-    // Allocate the script if it doesn't exist
-    if (!world->script) {
-        world->script = (Script*)malloc(sizeof(Script));
-    }
-
-    // Get the dialogue array
-    cJSON *dialogue = cJSON_GetObjectItem(json, "dialogue");
-    
-    if (dialogue) {
-        int dialogue_count = cJSON_GetArraySize(dialogue);
-        printf("Found %d dialogue entries\n", dialogue_count);
-        
-        // Allocate space for all lines
-        world->script->lines = (Line*)malloc(sizeof(Line) * dialogue_count);
-        world->script->line_count = dialogue_count;
-        
-        // Parse each dialogue entry
-        for (int i = 0; i < dialogue_count; i++) {
-            cJSON *dialogue_item = cJSON_GetArrayItem(dialogue, i);
-            
-            world->script->lines[i].character = strdup(cJSON_GetObjectItem(dialogue_item, "character")->valuestring);
-            world->script->lines[i].text = strdup(cJSON_GetObjectItem(dialogue_item, "text")->valuestring);
-            world->script->lines[i].audio_file = strdup(cJSON_GetObjectItem(dialogue_item, "audio_file")->valuestring);
-            
-            // Debug print during parsing
-            printf("Parsing line %d:\n", i);
-            if (world->script->lines[i].character) 
-                printf("  Character: %s\n", world->script->lines[i].character);
-            if (world->script->lines[i].text)
-                printf("  Text: %s\n", world->script->lines[i].text);
-            if (world->script->lines[i].audio_file)
-                printf("  Audio: %s\n", world->script->lines[i].audio_file);
-        }
-    }
-}
-
 void cleanup_script(Script* script) {
     if (script) {
         for (int i = 0; i < script->line_count; i++) {

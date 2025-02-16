@@ -22,6 +22,7 @@
 #include "character.h"
 #include "scene.h"
 #include "audio.h"
+#include "script.h"
 #include "utils.h"
 #include "utils_math.h"
 
@@ -40,6 +41,8 @@ void play_next_line(World* world) {
     
     // Check if current audio finished
     if (world->is_playing_audio) {
+        // TODO: fix this api it bad
+        render_text(20.0f, 20.0f, world->script->lines[world->current_line].text);
         if (!audio_is_playing()) {
             // Audio finished, move to next line
             world->is_playing_audio = false;
@@ -61,54 +64,6 @@ void init(void)
     world.quit = false;
 
     audio_init();
-
-    // TODO: 
-    char* script_text = read_text_file("api/generated/podcast_1739601442/script.json");
-    if (!script_text) {
-        printf("cant read script gg\n");
-    } else {
-        printf("hers the cript: %s\n", script_text);
-    }
-    cJSON* json = cJSON_Parse(script_text);
-    if (json == NULL) {
-        const char *error_ptr = cJSON_GetErrorPtr();
-        if (error_ptr != NULL) {
-            printf("Error parsing JSON: %s\n", error_ptr);
-        }
-    } else {
-        // Debug: Check if we can access dialogue array
-        cJSON* dialogue = cJSON_GetObjectItem(json, "dialogue");
-        if (dialogue) {
-            int count = cJSON_GetArraySize(dialogue);
-            printf("Found dialogue array with %d items\n", count);
-            
-            // Debug: Try to access first item
-            cJSON* first_item = cJSON_GetArrayItem(dialogue, 0);
-            if (first_item) {
-                cJSON* char_item = cJSON_GetObjectItem(first_item, "character");
-                if (char_item) {
-                    printf("First character: %s\n", char_item->valuestring);
-                }
-            }
-        }
-
-        parse_script(&world, json);
-        cJSON_Delete(json);
-        free(script_text);
-    }
-    // end todo
-
-    if (world.script) {
-        printf("Accessing %d lines:\n", world.script->line_count);
-        for (int i = 0; i < world.script->line_count; i++) {
-            Line* currentLine = &world.script->lines[i];
-            printf("[%d] %s: %s %s\n", 
-                i,
-                currentLine->character,
-                currentLine->text,
-                currentLine->audio_file);
-        }
-    }
 
     init_nuklear_gui(&world);
     render_init();
@@ -227,7 +182,9 @@ void frame(void)
     render_cameras(&world, world.active_camera.view, proj);
     draw_nuklear_gui(&world);
 
-    play_next_line(&world);
+    if (world.script) {
+        play_next_line(&world);
+    }
 
     sdtx_draw();
     sg_end_pass();

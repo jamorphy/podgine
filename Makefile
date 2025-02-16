@@ -8,7 +8,7 @@ BUILD_DIR = build
 OBJ_DIR = $(BUILD_DIR)/obj
 
 # Define source files
-SRC_FILES = main.c ecs.c utils.c camera.c gui.c http_client.c scene.c character.c render.c audio.c
+SRC_FILES = main.c ecs.c utils.c camera.c gui.c http_client.c scene.c character.c render.c audio.c script.c
 SOKOL_FILES = sokol.m
 CJSON_FILES = cJSON.c
 

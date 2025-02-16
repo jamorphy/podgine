@@ -79,6 +79,6 @@ def generate_podcast_script(topic):
     return script_file
 
 if __name__ == "__main__":
-    topic = "who is the greatest counter strike player of all time"
+    topic = "what might a complete, unstoppable, greatest of all time, NBA center look like? what traits from the greats would this player have? what race might the player be, if you had to guess?"
     output_file = generate_podcast_script(topic)
     print(f"Generated script saved to: {output_file}")
