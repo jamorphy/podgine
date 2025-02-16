@@ -115,6 +115,7 @@ typedef struct World {
     // TODO: HACKY INCOMING
     bool is_playing_audio;
     int current_line;  // to track which line we're on
+    char* current_speaking_character;
     // TODO: END HACKY
 
     bool quit;

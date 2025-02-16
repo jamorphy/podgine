@@ -4,6 +4,9 @@
 #include "types.h"
 #include "script.h"
 #include "utils.h"
+#include "audio.h"
+#include "render.h"
+#include "camera.h"
 
 void parse_script(World* world, cJSON *json)
 {
@@ -36,7 +39,7 @@ void parse_script(World* world, cJSON *json)
 
 void play_script(World* world)
 {
-    char* script_text = read_text_file("api/generated/podcast_1739692402/script.json");
+    char* script_text = read_text_file("api/generated/podcast_1739697648/script.json");
     if (!script_text) {
         // TODO: fix
         printf("cant read script gg\n");
@@ -71,3 +74,42 @@ void play_script(World* world)
         free(script_text);
     }
 }
+
+
+// TODO: clean up when script is fully finished
+void play_next_line(World* world) {
+    if (!world->is_playing_audio && 
+        world->current_line < world->script->line_count) {
+        
+        // Start playing the current line
+        audio_play_file(world->script->lines[world->current_line].audio_file);
+        world->is_playing_audio = true;
+        
+        // Switch camera only when starting a new line with a different character
+        const char* current_character = world->script->lines[world->current_line].character;
+        if (world->current_speaking_character == NULL || 
+            strcmp(world->current_speaking_character, current_character) != 0) {
+            
+            printf("%s is speaking.\n", current_character);
+            switch_to_character_camera(world, current_character);
+            
+            // Update current speaking character
+            if (world->current_speaking_character) {
+                free(world->current_speaking_character);
+            }
+            world->current_speaking_character = strdup(current_character);
+        }
+    }
+    
+    // Check if current audio finished
+    if (world->is_playing_audio) {
+        render_text(1.0f, 57.0f, world->script->lines[world->current_line].text);
+        
+        if (!audio_is_playing()) {
+            // Audio finished, move to next line
+            world->is_playing_audio = false;
+            world->current_line++;
+        }
+    }
+}
+

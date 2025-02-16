@@ -28,6 +28,7 @@ void render_init(void) {
     });
 }
 
+// TODO: TEXT WRAPPING
 void render_text(float x, float y, const char* text) {
     sdtx_pos(x, y);
     sdtx_font(FONT_C64);

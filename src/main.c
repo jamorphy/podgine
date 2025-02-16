@@ -30,27 +30,6 @@ World world;
 
 void cleanup(void);
 
-void play_next_line(World* world) {
-    if (!world->is_playing_audio && 
-        world->current_line < world->script->line_count) {
-        
-        // Start playing the current line
-        audio_play_file(world->script->lines[world->current_line].audio_file);
-        world->is_playing_audio = true;
-    }
-    
-    // Check if current audio finished
-    if (world->is_playing_audio) {
-        // TODO: fix this api it bad
-        render_text(20.0f, 20.0f, world->script->lines[world->current_line].text);
-        if (!audio_is_playing()) {
-            // Audio finished, move to next line
-            world->is_playing_audio = false;
-            world->current_line++;
-        }
-    }
-}
-
 void init(void)
 {
     sg_setup(&(sg_desc){
@@ -70,8 +49,9 @@ void init(void)
     // TODO: this create_ api is terrible
     create_and_set_grid(&world);    
     create_and_add_camera(&world, 82.76f, 75.0f, -106.12f, -30.0f, -395.0f, "default camera");
-    create_character_poscam(&world, "assets/buu2.jpeg", "buu_guy", "majin buu", (vec3) { 5.0f, 5.0f, 20.0f }, (vec3) { 4.22f, 4.0f, 35.76f }, (vec2){8.25f, -180.15f});
-    create_character_poscam(&world, "assets/kermit.jpg", "kermit_da_frog", "Kermit the frog", (vec3) { 30.0f, 0.0f, 30.0f }, (vec3) { 30.0f, 4.0f, 46.12f }, (vec2) { -9.50f, -180.0f});
+    create_character_poscam(&world, "assets/buu2.jpeg", "jaja", "majin buu", (vec3) { 5.0f, 5.0f, 20.0f }, (vec3) { 4.22f, 4.0f, 35.76f }, (vec2){8.25f, -180.15f});
+    create_character_poscam(&world, "assets/kermit.jpg", "kermit", "Kermit the frog", (vec3) { 30.0f, 0.0f, 30.0f }, (vec3) { 30.0f, 4.0f, 46.12f }, (vec2) { -9.50f, -180.0f});
+    create_character_poscam(&world, "assets/farm.jpg", "dn", "DEEZ NUTS GUY", (vec3) { -30.0f, 0.0f, -30.0f }, (vec3) { -30.0f, 4.0f, -48.0f }, (vec2) { -6.14f, -360.0f});
     init_camera_renderable(&world);
     world.active_camera = world.cameras[EDITOR_CAMERA_INDEX];
 }

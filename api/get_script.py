@@ -1,55 +1,71 @@
 import json
 import os
 from datetime import datetime
-from openai import OpenAI
+from anthropic import Anthropic
 from elevenlabs.client import ElevenLabs
 
 from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration
-openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+anthropic_client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 eleven_client = ElevenLabs(api_key=os.getenv('ELEVENLABS_API_KEY'))
 
 def generate_podcast_script(topic):
     output_dir = f"generated/podcast_{int(datetime.now().timestamp())}"
     os.makedirs(output_dir, exist_ok=True)
-    
+
+    # TODO; read from manifest file from engine 
     system_prompt = """You are a JSON generator. Output must be valid JSON following this exact structure:
     {
         "topic": the given topic,
         "dialogue": [
             {
-                "character": "buu_guy",
+                "character": "jaja",
                 "text": "statement here"
             },
             {
-                "character": "kermit_da_frog", 
+                "character": "kermit", 
                 "text": "response here"
-            }
+            },
+            {
+                "character": "dn", 
+                "text": "rebuttal here"
+            },
+            .... continue the conversation for multiple turns
         ]
     }
     Rules:
-    - Characters must alternate between "buu_guy" and "kermit_da_frog"
-    - Start with buu_guy
-    - Each text entry should be 1-3 sentences
+    - Characters must alternate between "jaja", "kermit", "dn"
+    - Start with jaja
+    - Each text entry should be 1-2 sentences
     """
 
-    response = openai_client.chat.completions.create(
-        model="gpt-4o",
+    response = anthropic_client.messages.create(
+        model="claude-3-opus-20240229",
+        max_tokens=2000,
+        system=system_prompt,
         messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Generate a detailed, lengthy, debate-y and argumentative, conversation about the following topic: {topic}"}
+            {
+                "role": "user", 
+                "content": f"Generate a detailed, lengthy, debate-y and argumentative, conversation about the following topic: {topic}."
+            }
         ]
     )
     
     # Parse the JSON response
-    conversation = json.loads(response.choices[0].message.content)
+    conversation = json.loads(response.content[0].text)
     
     # Generate audio for each line of dialogue
     for i, entry in enumerate(conversation['dialogue']):
         # Select voice ID based on character
-        voice_id = "HtU5TEQAgMkBMEhgdegX" if entry['character'] == "buu_guy" else "29vD33N1CtxCmqQRPOHJ"
+        cid = entry['character']
+        if cid == "jaja":
+            voice_id = "HtU5TEQAgMkBMEhgdegX"
+        elif cid == "kermit":
+            voice_id = "29vD33N1CtxCmqQRPOHJ"
+        elif cid == "dn":
+            voice_id = "Zlb1dXrM653N07WRdFW3"
         
         # Generate audio
         audio_stream = eleven_client.text_to_speech.convert(
