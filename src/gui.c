@@ -22,28 +22,14 @@ void init_nuklear_gui(World* world) {
 }
 
 void draw_nuklear_gui(World* world) {
-    
     struct nk_context* nk_ctx = world->ctx;
+    char buffer[64];
 
     nk_ctx = snk_new_frame();
-    if (nk_begin(nk_ctx, "nukes", nk_rect(0, 0, 250, 400),
-                 NK_WINDOW_BORDER | NK_WINDOW_TITLE)) {
     
-        nk_layout_row_static(nk_ctx, 30, 80, 1);
-        if (nk_button_label(nk_ctx, "save scene")) {
-            printf("saving scene - TO BE IMPLEMENTED");
-        }
-
-        nk_layout_row_dynamic(nk_ctx, 20, 1);
-        nk_label(nk_ctx, "Camera Position:", NK_TEXT_LEFT);
-    
-        char buffer[64];
-    
-        snprintf(buffer, sizeof(buffer), "Pitch: %.2f° Yaw: %.2f°", world->active_camera.pitch, world->active_camera.yaw);
-        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);    
-    
-        snprintf(buffer, sizeof(buffer), "X: %.2f Y: %.2f Z: %.2f", world->active_camera.position[0], world->active_camera.position[1], world->active_camera.position[2]);
-        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
+    // Main window
+    if (nk_begin(nk_ctx, "nukes", nk_rect(0, 0, 250, 200),
+                 NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_MINIMIZABLE)) {
 
         nk_layout_row_dynamic(nk_ctx, 20, 1);
         nk_label(nk_ctx, "Camera Switcher:", NK_TEXT_LEFT);
@@ -62,7 +48,6 @@ void draw_nuklear_gui(World* world) {
                 world->active_camera.position[0] = selected->position[0];
                 world->active_camera.position[1] = selected->position[1];
                 world->active_camera.position[2] = selected->position[2];
-                //world->camera.distance = selected->distance;
                 world->active_camera.pitch = selected->pitch;
                 world->active_camera.yaw = selected->yaw;
                 world->in_edit_mode = false;
@@ -72,7 +57,7 @@ void draw_nuklear_gui(World* world) {
         nk_checkbox_label(nk_ctx, "Show Grid", &world->show_grid);
 
         if (world->in_edit_mode) {
-            nk_layout_row_static(nk_ctx, 30, 180, 1);  // Adjust width (180) as needed
+            nk_layout_row_static(nk_ctx, 30, 180, 1);
             if (nk_button_label(nk_ctx, "Create Camera Here")) {
                 create_camera_at_current_position(world);                
             }
@@ -86,16 +71,31 @@ void draw_nuklear_gui(World* world) {
             nk_label(nk_ctx, "<In Editor Mode>", NK_TEXT_CENTERED);
         }
 
-        /* nk_layout_row_static(nk_ctx, 30, 80, 1); */
-        /* if (nk_button_label(nk_ctx, "play script")) { */
-        /*     play_script(world); */
-        /* } */
-
         nk_layout_row_static(nk_ctx, 30, 80, 1);
         if (nk_button_label(nk_ctx, "exit")) {
             world->quit = true;
         }
     }
-    snk_render(sapp_width(), sapp_height());
+    nk_end(nk_ctx);  // Moved outside the if statement
+
+    // Camera info window (on the right side)
+    if (nk_begin(nk_ctx, "Camera Info", nk_rect(sapp_width() - 250, 0, 250, 150),
+                 NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_MINIMIZABLE)) {
+        
+        nk_layout_row_dynamic(nk_ctx, 20, 1);
+        nk_label(nk_ctx, "Camera Position:", NK_TEXT_LEFT);
+    
+        snprintf(buffer, sizeof(buffer), "Pitch: %.2f° Yaw: %.2f°", 
+                world->active_camera.pitch, world->active_camera.yaw);
+        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);    
+    
+        snprintf(buffer, sizeof(buffer), "X: %.2f Y: %.2f Z: %.2f", 
+                world->active_camera.position[0], 
+                world->active_camera.position[1], 
+                world->active_camera.position[2]);
+        nk_label(nk_ctx, buffer, NK_TEXT_LEFT);
+    }
     nk_end(nk_ctx);
+
+    snk_render(sapp_width(), sapp_height());
 }
