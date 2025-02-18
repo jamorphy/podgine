@@ -1,5 +1,6 @@
 import json
 import os
+import requests
 from datetime import datetime
 from anthropic import Anthropic
 from elevenlabs.client import ElevenLabs
@@ -11,11 +12,39 @@ load_dotenv()
 anthropic_client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 eleven_client = ElevenLabs(api_key=os.getenv('ELEVENLABS_API_KEY'))
 
+# Toggle for local TTS
+USE_LOCAL_TTS = True
+LOCAL_TTS_URL = 'http://192.168.254.11:5000/tts'
+
+def generate_audio(text, voice_id, output_path):
+    """Helper function to generate audio using either ElevenLabs or local TTS"""
+    if USE_LOCAL_TTS:
+        response = requests.post(
+            LOCAL_TTS_URL,
+            json={
+                "text": text,
+                "voice_id": voice_id
+            }
+        )
+        if response.status_code != 200:
+            raise Exception(f"Local TTS error: {response.text}")
+        audio_data = response.content
+    else:
+        audio_stream = eleven_client.text_to_speech.convert(
+            text=text,
+            voice_id=voice_id,
+            model_id="eleven_multilingual_v2"
+        )
+        audio_data = b''.join(chunk for chunk in audio_stream if isinstance(chunk, bytes))
+    
+    # Save the audio file
+    with open(output_path, 'wb') as f:
+        f.write(audio_data)
+
 def generate_podcast_script(topic):
     output_dir = f"generated/podcast_{int(datetime.now().timestamp())}"
     os.makedirs(output_dir, exist_ok=True)
 
-    # TODO; read from manifest file from engine 
     system_prompt = """You are a JSON generator. Output must be valid JSON following this exact structure:
     {
         "topic": the given topic,
@@ -67,19 +96,15 @@ def generate_podcast_script(topic):
         elif cid == "dn":
             voice_id = "Zlb1dXrM653N07WRdFW3"
         
-        # Generate audio
-        audio_stream = eleven_client.text_to_speech.convert(
-            text=entry['text'],
-            voice_id=voice_id,
-            model_id="eleven_multilingual_v2"
-        )
-        
-        # Save audio file
+        # Generate and save audio file
         audio_filename = f"{entry['character']}_{i}.mp3"
         audio_path = os.path.join(output_dir, audio_filename)
-        with open(audio_path, 'wb') as f:
-            audio_data = b''.join(chunk for chunk in audio_stream if isinstance(chunk, bytes))
-            f.write(audio_data)
+        
+        try:
+            generate_audio(entry['text'], voice_id, audio_path)
+        except Exception as e:
+            print(f"Error generating audio for entry {i}: {str(e)}")
+            continue
         
         # Add audio file path to the dialogue entry
         entry['audio_file'] = f"api/{output_dir}/{audio_filename}"
@@ -91,15 +116,19 @@ def generate_podcast_script(topic):
             **conversation,
             "timestamp": datetime.now().isoformat()
         }, f, indent=2)
+
     try:
         with open("../engine_pipe", "w") as pipe:
-            pipe.write(script_file + "\n")
+            pipe.write(f'api/{script_file}' + "\n")
     except:
         print("Failed to write to engine pipe")
     
     return script_file
 
 if __name__ == "__main__":
-    topic = "how can we verify if the colors that one human sees are the exact same colors that another human sees? dn might see the color blue, and kermit might see the color blue, but in dn's world blue is actually red in kermits world... interesting conversation"
+    # Print which TTS service we're using
+    print(f"Using {'Local' if USE_LOCAL_TTS else 'ElevenLabs'} TTS service")
+    
+    topic = "best mma fighter of all time? How would they compare to a mongol warrior in hand to hand combat?"
     output_file = generate_podcast_script(topic)
     print(f"Generated script saved to: {output_file}")

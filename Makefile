@@ -7,6 +7,8 @@ FRAMEWORKS = -framework Metal -framework MetalKit -framework Cocoa -framework Au
 BUILD_DIR = build
 OBJ_DIR = $(BUILD_DIR)/obj
 
+DEBUG_FLAGS = -g -O0 -DDEBUG
+
 # Define source files
 SRC_FILES = main.c ecs.c utils.c camera.c gui.c http_client.c scene.c character.c render.c audio.c script.c
 SOKOL_FILES = sokol.m
@@ -28,6 +30,9 @@ LIBS = -lcurl -lfreetype
 TARGET = $(BUILD_DIR)/demo
 
 all: directories $(TARGET)
+
+debug: CFLAGS += $(DEBUG_FLAGS)
+debug: directories $(TARGET)
 
 directories:
 	@mkdir -p $(BUILD_DIR)

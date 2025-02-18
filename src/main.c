@@ -52,8 +52,6 @@ void check_script_pipe(World* world) {
     if (current - last_check < 3) return;
     last_check = current;
 
-    printf("CHECKING FOR NEW SCRIPTS IN check_script_pipe\n");
-
     if (fd == -1) {
         fd = open("engine_pipe", O_RDONLY | O_NONBLOCK);
         if (fd == -1) {
@@ -69,7 +67,7 @@ void check_script_pipe(World* world) {
         path[strcspn(path, "\n")] = 0;  // Remove newline
         
         // Just add the new string and increment index
-        if (world->backlog_i < 100) {
+        if (world->backlog_size < 100) {
             world->backlog[world->backlog_size] = strdup(path);
             world->backlog_size++;
             printf("Added new script to backlog: %s\n", path);
@@ -96,22 +94,25 @@ void init(void)
     // TODO: this create_ api is terrible
     create_and_set_grid(&world);    
     create_and_add_camera(&world, 82.76f, 75.0f, -106.12f, -30.0f, -395.0f, "default camera");
-    create_character_poscam(&world, "assets/buu2.jpeg", "jaja", "majin buu", (vec3) { 5.0f, 5.0f, 20.0f }, (vec3) { 4.22f, 4.0f, 35.76f }, (vec2){8.25f, -180.15f});
+    create_character_poscam(&world, "assets/buu2.jpeg", "jaja", "majin buu", (vec3) { 5.0f, 5.0f, 20.0f }, (vec3) { 4.96f, 16.0f, 3.02f }, (vec2){-25.25f, -362.15f});
     create_character_poscam(&world, "assets/kermit.jpg", "kermit", "Kermit the frog", (vec3) { 30.0f, 0.0f, 30.0f }, (vec3) { 30.0f, 4.0f, 46.12f }, (vec2) { -9.50f, -180.0f});
     create_character_poscam(&world, "assets/farm.jpg", "dn", "DEEZ NUTS GUY", (vec3) { -30.0f, 0.0f, -30.0f }, (vec3) { -30.0f, 4.0f, -48.0f }, (vec2) { -6.14f, -360.0f});
     init_camera_renderable(&world);
     world.active_camera = world.cameras[EDITOR_CAMERA_INDEX];
 
+    
+
     init_script_pipe();
 
+    // todo: stop
     for (int i = 0; i < 100; i++) world.backlog[i] = NULL;    
-    world.backlog[0] = "api/generated/podcast_1739771187/script.json";
-    world.backlog[1] = "api/generated/podcast_1739826494/script.json";
+    world.backlog[0] = "api/generated/podcast_1739857608/script.json";
     world.backlog_i = 0;
-    world.backlog_size = 2;
+    world.backlog_size = 1;
 
     world.active_script = malloc(sizeof(Script));
-    load_script(world.active_script, world.backlog[world.backlog_i++]);
+    load_script(&world, world.backlog[world.backlog_i]);
+    world.is_script_active = true;
 }
 
 void input(const sapp_event* ev)
@@ -188,6 +189,8 @@ void frame(void)
         cleanup();
         exit(1);
     }
+
+    
     
     const float w = sapp_widthf();
     const float h = sapp_heightf();
@@ -220,14 +223,13 @@ void frame(void)
     render_cameras(&world, world.active_camera.view, proj);
     draw_nuklear_gui(&world);
 
-    if (world.active_script) {
+    if (world.is_script_active) {
         play_next_line(&world);
+    } else {
+        if (world.backlog[world.backlog_i] != NULL) {
+            load_script(&world, world.backlog[world.backlog_i]);
+        }
     }
-
-    for (int i = 0; i < 5; i++) {
-        printf("%i: %s\t", i, world.backlog[i]);
-    }
-    printf("\n");
 
     sdtx_draw();
     sg_end_pass();

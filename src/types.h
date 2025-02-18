@@ -113,8 +113,10 @@ typedef struct World {
     struct nk_context* ctx;
 
     Script* active_script;
+    
 
     // TODO: HACKY INCOMING
+    bool is_script_active;
     bool is_playing_audio;
     char* backlog[100];
     int backlog_i;

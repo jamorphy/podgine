@@ -28,12 +28,45 @@ void render_init(void) {
     });
 }
 
-// TODO: TEXT WRAPPING
-void render_text(float x, float y, const char* text) {
+// TODO: add current topic text
+
+void render_text_raw(float x, float y, const char* text) {
     sdtx_pos(x, y);
     sdtx_font(FONT_C64);
     sdtx_color3b(255, 255, 255);
     sdtx_puts(text);
+}
+
+void render_text(float x, float y, const char* text) {
+    int chars_per_line = 70; // You can adjust this or make it a parameter
+    int len = strlen(text);
+    int current_pos = 0;
+    float current_y = y;
+    char line_buffer[256];
+    
+    while (current_pos < len) {
+        int chars_remaining = len - current_pos;
+        int line_length = (chars_remaining > chars_per_line) ? chars_per_line : chars_remaining;
+        
+        int last_space = -1;
+        for (int i = 0; i < line_length; i++) {
+            if (text[current_pos + i] == ' ') {
+                last_space = i;
+            }
+        }
+        
+        if (last_space != -1 && chars_remaining > chars_per_line) {
+            line_length = last_space + 1;
+        }
+        
+        strncpy(line_buffer, text + current_pos, line_length);
+        line_buffer[line_length] = '\0';
+        
+        render_text_raw(x, current_y, line_buffer);
+        
+        current_pos += line_length;
+        current_y += 1.0f;
+    }
 }
 
 void render_text_colored(float x, float y, const char* text, uint8_t r, uint8_t g, uint8_t b) {

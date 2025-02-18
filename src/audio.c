@@ -17,7 +17,7 @@ static struct {
 } state = {0};
 
 static void audio_stream_callback(float* buffer, int num_frames, int num_channels) {
-    // First verify we're actually getting called with data
+
     static bool first_call = true;
     if (first_call) {
         printf("First callback: frames=%d, channels=%d\n", num_frames, num_channels);
@@ -35,7 +35,7 @@ static void audio_stream_callback(float* buffer, int num_frames, int num_channel
     // Copy frames to output buffer
     for (int i = 0; i < num_frames * num_channels; i++) {
         if (state.current_sample < state.num_samples) {
-            buffer[i] = state.audio_buffer[state.current_sample++] * 0.8;
+            buffer[i] = state.audio_buffer[state.current_sample++];
         } else {
             buffer[i] = 0.0f;
             if (i == 0) {
@@ -51,7 +51,7 @@ void audio_init(void) {
     saudio_setup(&(saudio_desc){
             .stream_cb = audio_stream_callback,
             .num_channels = 1,     // Changed to mono since your MP3 is mono
-            .sample_rate = 44100,  // Match MP3 sample rate
+            .sample_rate = 24000,  // Match MP3 sample rate TODO: elevenlabs 44100 Kokoro 24000
             .buffer_frames = 2048  // Add explicit buffer size
         });
     
