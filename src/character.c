@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "log.h"
 #include "character.h"
 #include "ecs.h"
 #include "camera.h"
@@ -31,7 +32,7 @@ Entity* create_character(World* world,
     entity->character = character;
 
     if (world->renderable_count >= 1000) {
-        printf("Exceeded max renderable count\n");
+        LOG_FATAL("Exceeded MAX_RENDERABLES");
         return NULL;
     }
 
@@ -64,7 +65,7 @@ Entity* create_character_pos(World* world,
     entity->character = character;
 
     if (world->renderable_count >= 1000) {
-        printf("Exceeded max renderable count\n");
+        LOG_FATAL("Exceeded MAX_RENDERABLES");
         return NULL;
     }
 
@@ -96,7 +97,7 @@ Entity* create_character_poscam(World* world,
     entity->character = character;
 
     if (world->renderable_count >= 1000) {
-        printf("Exceeded max renderable count\n");
+        LOG_FATAL("Exceeded MAX_RENDERABLES");
         return NULL;
     }
 

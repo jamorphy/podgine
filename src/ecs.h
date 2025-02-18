@@ -11,7 +11,8 @@ void destroy_entity(World* world, Entity* entity);
 void destroy_mesh(Mesh* mesh);
 void destroy_material(Material* material);
 
-void create_and_set_grid(World* world);
+void create_and_set_grid(Renderable *renderable);
+void destroy_grid(Renderable *renderable);
 
 // move these some where else
 Mesh* create_quad_mesh(sg_image texture);

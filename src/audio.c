@@ -7,6 +7,7 @@
 #include "../libs/sokol/sokol_audio.h"
 #define DR_MP3_IMPLEMENTATION
 #include "../libs/dr_mp3.h"
+#include "log.h"
 #include "audio.h"
 
 static struct {
@@ -20,12 +21,10 @@ static void audio_stream_callback(float* buffer, int num_frames, int num_channel
 
     static bool first_call = true;
     if (first_call) {
-        printf("First callback: frames=%d, channels=%d\n", num_frames, num_channels);
         first_call = false;
     }
 
     if (!state.is_playing || !state.audio_buffer) {
-        // Fill with silence
         for (int i = 0; i < num_frames * num_channels; i++) {
             buffer[i] = 0.0f;
         }
@@ -40,7 +39,6 @@ static void audio_stream_callback(float* buffer, int num_frames, int num_channel
             buffer[i] = 0.0f;
             if (i == 0) {
                 state.is_playing = false;
-                printf("Reached end of audio data\n");
             }
         }
     }
@@ -50,36 +48,36 @@ void audio_init(void) {
     // Match common MP3 format
     saudio_setup(&(saudio_desc){
             .stream_cb = audio_stream_callback,
-            .num_channels = 1,     // Changed to mono since your MP3 is mono
-            .sample_rate = 24000,  // Match MP3 sample rate TODO: elevenlabs 44100 Kokoro 24000
-            .buffer_frames = 2048  // Add explicit buffer size
+            .num_channels = 1,
+            .sample_rate = 24000,  // elevenlabs 44100 Kokoro 24000
+            .buffer_frames = 2048
         });
     
     if (!saudio_isvalid()) {
-        printf("Failed to initialize audio system!\n");
+        LOG_FATAL("Failed to initialize audio system!");
         return;
     }
-    printf("Audio system initialized: %d Hz, %d channels\n", 
+    LOG_DEBUG("Initialized audio system: %d Hz, %d channels", 
            saudio_sample_rate(), saudio_channels());
 }
 
 void audio_play_file(const char* filepath) {
     drmp3 mp3;
     if (!drmp3_init_file(&mp3, filepath, NULL)) {
-        printf("Failed to load MP3\n");
+        LOG_WARN("Failed to load MP3");
         return;
     }
 
     drmp3_uint64 total_frame_count = drmp3_get_pcm_frame_count(&mp3);
     state.num_samples = (int)(total_frame_count * mp3.channels);
-    printf("Loading MP3: pcm_frames=%llu (%.2f seconds)\n", 
-           total_frame_count, 
-           (float)total_frame_count / mp3.sampleRate);
+    /* LOG_DEBUG("Loading MP3: pcm_frames=%llu (%.2f seconds)",  */
+    /*        total_frame_count,  */
+    /*        (float)total_frame_count / mp3.sampleRate); */
 
     state.audio_buffer = (float*)malloc(sizeof(float) * state.num_samples);
     if (!state.audio_buffer) {
         drmp3_uninit(&mp3);
-        printf("Failed to allocate audio buffer\n");
+        LOG_WARN("Failed to allocate audio buffer");
         return;
     }
 

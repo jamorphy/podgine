@@ -38,7 +38,7 @@ void render_text_raw(float x, float y, const char* text) {
 }
 
 void render_text(float x, float y, const char* text) {
-    int chars_per_line = 70; // You can adjust this or make it a parameter
+    int chars_per_line = 70;
     int len = strlen(text);
     int current_pos = 0;
     float current_y = y;
@@ -75,14 +75,6 @@ void render_text_colored(float x, float y, const char* text, uint8_t r, uint8_t 
     sdtx_color3b(r, g, b);
     sdtx_puts(text);
 }
-
-/* void render_begin_frame() { */
-/*     const float w = sapp_widthf(); */
-/*     const float h = sapp_heightf(); */
-/* } */
-
-/* void render_end_frame() { */
-/* } */
 
 void compute_model_matrix(Transform* transform, mat4x4 out_matrix)
 {

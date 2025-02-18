@@ -1,14 +1,68 @@
 #include <stdlib.h>
 #include <sys/dir.h>
 #include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string.h>
+#include <time.h>
 #include "cJSON.h"
 
+#include "log.h"
 #include "types.h"
 #include "script.h"
 #include "utils.h"
 #include "audio.h"
 #include "render.h"
 #include "camera.h"
+
+void init_script_pipe(void) {
+    if (access("engine_pipe", F_OK) == -1) {
+        mkfifo("engine_pipe", 0666);
+    }
+}
+
+void check_script_pipe(World* world) {
+    static time_t last_check = 0;
+    static int fd = -1;
+    time_t current = time(NULL);
+    
+    if (current - last_check < 3) return;
+    last_check = current;
+
+    if (fd == -1) {
+        fd = open("engine_pipe", O_RDONLY | O_NONBLOCK);
+        if (fd == -1) {
+            LOG_WARN("Failed to open script listen pipe");
+            return;
+        }
+    }
+    
+    char path[256] = {0};
+    ssize_t bytes = read(fd, path, sizeof(path)-1);
+    
+    if (bytes > 0) {
+        path[strcspn(path, "\n")] = 0;
+        add_script(&world->script_queue, path);
+        LOG_DEBUG("Added %s to script queue", path);
+    }
+}
+
+void add_script(ScriptQueue* queue, const char* filepath) {
+    queue->scripts[queue->tail] = strdup(filepath);
+    queue->tail = (queue->tail + 1) % 100;
+    queue->size++;
+}
+
+// Get and remove next script
+char* get_next_script(ScriptQueue* queue) {
+    if (queue->size == 0) return NULL;
+    char* script = queue->scripts[queue->head];
+    queue->head = (queue->head + 1) % 100;
+    queue->size--;
+    return script;
+}
 
 void cleanup_script(Script* script)
 {
@@ -25,17 +79,15 @@ void cleanup_script(Script* script)
 
 void load_script(World* world, const char* filepath)
 {
-    printf("I'm in load script heres the filepath: %s\n", filepath);
     char* script_text = read_text_file(filepath);
     if (!script_text) {
-        // TODO: fix
-        printf("cant read script gg\n");
+        LOG_WARN("Cannot read script");
     }
     cJSON* json = cJSON_Parse(script_text);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
         if (error_ptr != NULL) {
-            printf("Error parsing JSON: %s\n", error_ptr);
+            LOG_WARN("Error parsing JSON: %s\n", error_ptr);
         }
     }
 
@@ -50,8 +102,6 @@ void load_script(World* world, const char* filepath)
     }
 
     int dialogue_count = cJSON_GetArraySize(dialogue);
-    printf("Found %d dialogue entries\n", dialogue_count);
-
     world->active_script->lines = (Line*)malloc(sizeof(Line) * dialogue_count);
     world->active_script->line_count = dialogue_count;
 
@@ -76,10 +126,7 @@ void cleanup_active_script(World* world) {
 }
 
 void play_next_line(World* world) {
-    if (!world->active_script) {
-        printf("No active script, mallocing it\n");
-        return;
-    }
+    if (!world->active_script) return;
 
     if (!world->is_playing_audio &&
         world->active_script->current_line < world->active_script->line_count) {
@@ -91,7 +138,6 @@ void play_next_line(World* world) {
         if (world->active_script->current_speaking_character == NULL ||
             strcmp(world->active_script->current_speaking_character, current_character) != 0) {
 
-            printf("%s is speaking.\n", current_character);
             switch_to_character_camera(world, current_character);
 
             if (world->active_script->current_speaking_character) {
@@ -110,15 +156,14 @@ void play_next_line(World* world) {
 
             // Check if script is finished
             if (world->active_script->current_line >= world->active_script->line_count) {
-                printf("Script finished\n");
+                LOG_DEBUG("Script finished");
                 world->is_script_active = false;
                 free(world->active_script);
 
-                world->backlog_i++;
-
-                if (world->backlog[world->backlog_i]) {
-                    printf("about to queue the next script at index %i\n", world->backlog_i);
-                    load_script(world, world->backlog[world->backlog_i]);
+                char* next_script = get_next_script(&world->script_queue);
+                if (next_script) {
+                    load_script(world, next_script);
+                    free(next_script);
                 }
             }
         }

@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include "../libs/cJSON/cJSON.h"
 
+#include "log.h"
 #include "scene.h"
 #include "ecs.h"
 #include "constants.h"
@@ -51,14 +52,12 @@ void clear_scene(World* world) {
     for (int i = 1; i < MAX_CAMERAS; i++) {
         Camera* cam = &world->cameras[i];
         cam->id = 0;
-        // TODO: make this a vec3
         cam->position[0] = 0.0;
         cam->position[1] = 0.0;
         cam->position[2] = 0.0;
         cam->pitch = 0;
         cam->yaw = 0;
         memset(cam->name, 0, sizeof(cam->name));
-        // Reset any other camera properties to their default values
     }
     
     // Restore editor camera
@@ -67,14 +66,12 @@ void clear_scene(World* world) {
 }
 
 bool load_scene(World* world, const char* filename) {
-    // Build full path
     char filepath[256];
     snprintf(filepath, sizeof(filepath), "scenes/%s", filename);
     
-    // Open file
     FILE* file = fopen(filepath, "rb");
     if (!file) {
-        fprintf(stderr, "Failed to open scene file: %s\n", filepath);
+        LOG_WARN("Failed to open scene file: %s", filepath);
         return false;
     }
     
@@ -82,7 +79,7 @@ bool load_scene(World* world, const char* filename) {
     fseek(file, 0, SEEK_END);
     long file_size_long = ftell(file);
     if (file_size_long < 0) {
-        fprintf(stderr, "Error getting file size\n");
+        LOG_WARN("Error getting scene file size");
         fclose(file);
         return false;
     }
@@ -92,7 +89,7 @@ bool load_scene(World* world, const char* filename) {
     // Allocate buffer and read file
     char* json_buffer = (char*)malloc(file_size + 1);
     if (!json_buffer) {
-        fprintf(stderr, "Failed to allocate memory for scene file\n");
+        LOG_WARN("Failed to allocate memory for scene file");
         fclose(file);
         return false;
     }
@@ -101,7 +98,7 @@ bool load_scene(World* world, const char* filename) {
     fclose(file);
     
     if (read_size != file_size) {
-        fprintf(stderr, "Failed to read entire scene file\n");
+        LOG_WARN("Failed to read scene file");
         free(json_buffer);
         return false;
     }
@@ -115,7 +112,7 @@ bool load_scene(World* world, const char* filename) {
     if (!root) {
         const char* error_ptr = cJSON_GetErrorPtr();
         if (error_ptr) {
-            fprintf(stderr, "JSON Parse Error before: %s\n", error_ptr);
+            LOG_WARN("JSON Parse Error before: %s", error_ptr);
         }
         return false;
     }
@@ -123,7 +120,7 @@ bool load_scene(World* world, const char* filename) {
     // Version check
     cJSON* version = cJSON_GetObjectItem(root, "scene_version");
     if (!version || !cJSON_IsNumber(version) || version->valueint != 1) {
-        fprintf(stderr, "Invalid or unsupported scene version\n");
+        LOG_WARN("Invalid or unsupported scene version");
         cJSON_Delete(root);
         return false;
     }
@@ -131,10 +128,9 @@ bool load_scene(World* world, const char* filename) {
     // Clear existing scene
     clear_scene(world);
     
-    // TODO: Load entities and cameras
     cJSON* entities = cJSON_GetObjectItem(root, "entities");
     if (!entities || !cJSON_IsArray(entities)) {
-        fprintf(stderr, "Scene file missing entities array or invalid format\n");
+        LOG_WARN("Scene file missing entities array or invalid format");
         cJSON_Delete(root);
         return false;
     }
@@ -182,14 +178,14 @@ bool load_scene(World* world, const char* filename) {
             // For images, we need to get the image path
             cJSON* image_path = cJSON_GetObjectItem(mesh, "image_path");
             if (!image_path || !cJSON_IsString(image_path)) {
-                fprintf(stderr, "Image entity missing image_path\n");
+                LOG_WARN("Image entity missing image_path");
                 continue;
             }
             entity = create_img(world, image_path->valuestring, position, scale);
         }
 
         if (!entity) {
-            fprintf(stderr, "Failed to create entity of type: %s\n", mesh_type->valuestring);
+            LOG_WARN("Failed to create entity of type: %s", mesh_type->valuestring);
             cJSON_Delete(root);
             return false;
         }
@@ -197,7 +193,7 @@ bool load_scene(World* world, const char* filename) {
 
     cJSON* cameras = cJSON_GetObjectItem(root, "cameras");
     if (!cameras || !cJSON_IsArray(cameras)) {
-        fprintf(stderr, "Scene file missing cameras array or invalid format\n");
+        LOG_WARN("Scene file missing cameras array or invalid format");
         cJSON_Delete(root);
         return false;
     }

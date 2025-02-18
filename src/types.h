@@ -88,12 +88,19 @@ typedef struct {
     int line_count;
 } Script;
 
-// TODO: should i stop using fixed arrays
+typedef struct {
+    char* scripts[50];
+    int head;
+    int tail;
+    int size;
+} ScriptQueue;
+
+// TODO (later): Switch from fixed array pools
 typedef struct World {
-    Entity entities[1000];
+    Entity entities[MAX_ENTITIES];
     uint32_t entity_count;
     uint32_t next_entity_id;
-    
+
     // TODO: maybe move camera stuff to another struct
     Camera cameras[MAX_CAMERAS];
     int camera_count;
@@ -108,20 +115,16 @@ typedef struct World {
     Renderable camera_visualization_renderable;
     Renderable grid_renderable;
 
-    Renderable renderables[1000];
+    Renderable renderables[MAX_RENDERABLES];
     uint32_t renderable_count;
     struct nk_context* ctx;
 
     Script* active_script;
-    
-
-    // TODO: HACKY INCOMING
     bool is_script_active;
     bool is_playing_audio;
-    char* backlog[100];
+    ScriptQueue script_queue;
     int backlog_i;
     int backlog_size;
-    // TODO: END HACKY
 
     bool quit;
 } World;

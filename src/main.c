@@ -15,6 +15,7 @@
 #include "sokol_debugtext.h"
 
 #include "types.h"
+#include "log.h"
 #include "camera.h"
 #include "ecs.h"
 #include "gui.h"
@@ -30,57 +31,14 @@ World world;
 
 void cleanup(void);
 
-#include <errno.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <string.h>
-#include <time.h>
-
-void init_script_pipe(void) {
-    // Create the named pipe if it doesn't exist
-    if (access("engine_pipe", F_OK) == -1) {
-        mkfifo("engine_pipe", 0666);
-    }
-}
-
-void check_script_pipe(World* world) {
-    static time_t last_check = 0;
-    static int fd = -1;
-    time_t current = time(NULL);
-    
-    if (current - last_check < 3) return;
-    last_check = current;
-
-    if (fd == -1) {
-        fd = open("engine_pipe", O_RDONLY | O_NONBLOCK);
-        if (fd == -1) {
-            printf("Failed to open pipe\n");
-            return;
-        }
-    }
-    
-    char path[256] = {0};
-    ssize_t bytes = read(fd, path, sizeof(path)-1);
-    
-    if (bytes > 0) {
-        path[strcspn(path, "\n")] = 0;  // Remove newline
-        
-        // Just add the new string and increment index
-        if (world->backlog_size < 100) {
-            world->backlog[world->backlog_size] = strdup(path);
-            world->backlog_size++;
-            printf("Added new script to backlog: %s\n", path);
-        }
-    }
-}
-
 void init(void)
 {
     sg_setup(&(sg_desc){
             .environment = sglue_environment(),
             .logger.func = slog_func,
         });
+
+    init_logging();
     
     memset(&world, 0, sizeof(World));
     world.in_edit_mode = true;
@@ -88,11 +46,11 @@ void init(void)
     world.quit = false;
 
     audio_init();
-    
+    init_script_pipe();
     init_nuklear_gui(&world);
     render_init();
     // TODO: this create_ api is terrible
-    create_and_set_grid(&world);    
+    create_and_set_grid(&world.grid_renderable);    
     create_and_add_camera(&world, 82.76f, 75.0f, -106.12f, -30.0f, -395.0f, "default camera");
     create_character_poscam(&world, "assets/buu2.jpeg", "jaja", "majin buu", (vec3) { 5.0f, 5.0f, 20.0f }, (vec3) { 4.96f, 16.0f, 3.02f }, (vec2){-25.25f, -362.15f});
     create_character_poscam(&world, "assets/kermit.jpg", "kermit", "Kermit the frog", (vec3) { 30.0f, 0.0f, 30.0f }, (vec3) { 30.0f, 4.0f, 46.12f }, (vec2) { -9.50f, -180.0f});
@@ -100,18 +58,12 @@ void init(void)
     init_camera_renderable(&world);
     world.active_camera = world.cameras[EDITOR_CAMERA_INDEX];
 
-    
-
-    init_script_pipe();
-
-    // todo: stop
-    for (int i = 0; i < 100; i++) world.backlog[i] = NULL;    
-    world.backlog[0] = "api/generated/podcast_1739857608/script.json";
-    world.backlog_i = 0;
-    world.backlog_size = 1;
+    add_script(&world.script_queue, "api/generated/podcast_1739857608/script.json");
 
     world.active_script = malloc(sizeof(Script));
-    load_script(&world, world.backlog[world.backlog_i]);
+    char* first_script = get_next_script(&world.script_queue);
+    load_script(&world, first_script);
+    free(first_script);
     world.is_script_active = true;
 }
 
@@ -189,14 +141,11 @@ void frame(void)
         cleanup();
         exit(1);
     }
-
-    
     
     const float w = sapp_widthf();
     const float h = sapp_heightf();
 
     check_script_pipe(&world);
-
     update_camera_frame(&world);
 
     mat4x4 proj;
@@ -226,9 +175,9 @@ void frame(void)
     if (world.is_script_active) {
         play_next_line(&world);
     } else {
-        if (world.backlog[world.backlog_i] != NULL) {
-            load_script(&world, world.backlog[world.backlog_i]);
-        }
+        char* next_script = get_next_script(&world.script_queue);
+        load_script(&world, next_script);
+        free(next_script);
     }
 
     sdtx_draw();
@@ -237,12 +186,14 @@ void frame(void)
 }
 
 void cleanup(void)
-{
+{    
+    destroy_grid(&world.grid_renderable);
     audio_shutdown();
     clear_scene(&world);
     nk_free(world.ctx);
     snk_shutdown();
     sg_shutdown();
+    shutdown_logging();
 }
 
 sapp_desc sokol_main(int argc, char* argv[])

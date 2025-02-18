@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <unistd.h>
 
 #include "log.h"
@@ -12,6 +11,7 @@ void init_logging(void)
         perror("Failed to open log file");
         exit(1);
     }
+    LOG_DEBUG("Initialized logging system");
 }
 
 void shutdown_logging(void)

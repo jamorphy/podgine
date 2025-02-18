@@ -2,13 +2,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "constants.h"
+#include "log.h"
 #include "ecs.h"
 #include "utils.h"
-
-// TODO: what is this ?
-#define COMPONENTS_PER_VERTEX 7 // 3 pos floats + 4 color floats
-
-// TODO: Destroy grid fn
 
 // entity_set_transform_xyz
 void entity_set_transform_xyz(Entity* entity, vec3 xyz)
@@ -32,7 +29,24 @@ void entity_set_transform_scale(Entity* entity, vec3 scale)
     entity->transform.scale[2] = scale[2];
 }
 
-void create_and_set_grid(World* world)
+void destroy_grid(Renderable* renderable) {
+    if (renderable->mesh != NULL) {
+        sg_destroy_buffer(renderable->mesh->vertex_buffer);
+        
+        free(renderable->mesh);
+        renderable->mesh = NULL;
+    }
+
+    if (renderable->material != NULL) {
+        sg_destroy_shader(renderable->material->shader);
+        sg_destroy_pipeline(renderable->material->pipeline);
+        
+        free(renderable->material);
+        renderable->material = NULL;
+    }
+}
+
+void create_and_set_grid(Renderable* renderable)
 {
     // Allocate the mesh and material directly
     Mesh* mesh = (Mesh*)malloc(sizeof(Mesh));
@@ -129,15 +143,15 @@ void create_and_set_grid(World* world)
     });
 
     // Assign to the grid renderable
-    world->grid_renderable.mesh = mesh;
-    world->grid_renderable.material = material;
+    renderable->mesh = mesh;
+    renderable->material = material;
 }
 
 Mesh* create_quad_mesh(sg_image texture)
 {
     Mesh* mesh = malloc(sizeof(Mesh));
     if (!mesh) {
-        printf("Failed to allocate quad mesh\n");
+        LOG_WARN("Failed to allocate mesh in create_quad_mesh");
         return NULL;
     }
 
@@ -182,7 +196,7 @@ Mesh* create_cube_mesh(void)
 {
     Mesh* mesh = malloc(sizeof(Mesh));
     if (!mesh) {
-        printf("Failed to allocated a mesh\n");
+        LOG_WARN("Failed to allocate mesh in create_cube_mesh");
         return NULL;
     }
 
@@ -238,7 +252,7 @@ Material* create_textured_material(void)
 {
     Material* material = malloc(sizeof(Material));
     if (!material) {
-        printf("Failed to allocate material\n");
+        LOG_WARN("Failed to allocate mesh in create_textured_material");
         return NULL;
     }
 
@@ -299,7 +313,7 @@ Material* create_cube_material(void)
 {
     Material* material = malloc(sizeof(Material));
     if (!material) {
-        printf("Failed to allocated material\n");
+        LOG_WARN("Failed to allocate mesh in create_cube_material");
         return NULL;
     }
 
@@ -361,8 +375,8 @@ void destroy_material(Material* material)
 
 Entity* create_entity(World *world)
 {
-    if (world->entity_count >= 1000) {
-        printf("Exceeded max entity count\n");
+    if (world->entity_count >= MAX_ENTITIES) {
+        LOG_FATAL("Exceeded MAX_ENTITIES");
         return NULL;
     }
 
@@ -385,7 +399,7 @@ void destroy_entity(World *world, Entity *entity)
 
     // Validate index
     if (index >= world->entity_count) {
-        printf("ERROR: Invalid entity pointer (index %zu >= count %d)\n",
+        LOG_WARN("Invalid entity pointer (index %zu >= count %d)",
                index, world->entity_count);
         return;
     }
@@ -420,7 +434,7 @@ Entity* create_img(World* world, const char* image_path, vec3 pos, vec3 scale)
 
     // Create renderable
     if (world->renderable_count >= 1000) {
-        printf("Exceeded max renderable count\n");
+        LOG_FATAL("Exceeded MAX_RENDERABLES\n");
         return NULL;
     }
 
@@ -448,8 +462,8 @@ Entity* create_cube(World* world, vec3 pos, vec3 scale)
     entity->transform.scale[1] = scale[1];
     entity->transform.scale[2] = scale[2];
 
-    if (world->renderable_count >= 1000) {
-        printf("Exceeded max renderable count\n");
+    if (world->renderable_count >= MAX_RENDERABLES) {
+        LOG_FATAL("Exceeded MAX_RENDERABLES");
         return NULL;
     }
     Renderable* renderable = &world->renderables[world->renderable_count++];

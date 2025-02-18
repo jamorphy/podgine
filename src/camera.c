@@ -1,4 +1,5 @@
 #include "camera.h"
+#include "log.h"
 #include "constants.h"
 #include "ecs.h"
 #include "character.h"
@@ -66,9 +67,8 @@ void update_camera_frame(World* world)
 
 Camera* get_next_camera(World* world)
 {
-    // TODO: what is this exit bro
     if (world->camera_count >= MAX_CAMERAS) {
-        printf("Warning: Maximum number of cameras reached\n");
+        LOG_WARN("Exceeded MAX_CAMERAS");
         return NULL;
     }
     
@@ -99,7 +99,6 @@ void create_and_add_camera(World* world,
 
     Camera* new_cam = get_next_camera(world);
 
-    // Store exact position
     new_cam->position[0] = x;
     new_cam->position[1] = y;
     new_cam->position[2] = z;
@@ -131,10 +130,9 @@ void create_camera_at_current_position(World* world)
 
 void switch_to_character_camera(World *world, const char* character_id)
 {
-    // TODO: graceful exit
     Character* character = get_character(world, character_id);
     if (character == NULL) {
-        printf("failed to get character \n");
+        LOG_WARN("Failed to get character with id: %s", character->character_id);
     }
     world->active_camera.position[0] = character->cam->position[0];
     world->active_camera.position[1] = character->cam->position[1];
@@ -148,9 +146,8 @@ void init_camera_renderable(World* world)
 {
     sg_image texture = create_image_texture("assets/camera.jpg");
 
-    // Create renderable
     if (world->renderable_count >= 1000) {
-        printf("Exceeded max renderable count\n");
+        LOG_FATAL("Exceeded MAX_RENDERABLES");
     }
 
     // Set up mesh and material

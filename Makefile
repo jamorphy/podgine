@@ -10,7 +10,7 @@ OBJ_DIR = $(BUILD_DIR)/obj
 DEBUG_FLAGS = -g -O0 -DDEBUG
 
 # Define source files
-SRC_FILES = main.c ecs.c utils.c camera.c gui.c http_client.c scene.c character.c render.c audio.c script.c
+SRC_FILES = main.c ecs.c utils.c camera.c gui.c http_client.c scene.c character.c render.c audio.c script.c log.c
 SOKOL_FILES = sokol.m
 CJSON_FILES = cJSON.c
 

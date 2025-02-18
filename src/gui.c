@@ -1,4 +1,6 @@
 #include <stdlib.h>
+
+#include "log.h"
 #include "gui.h"
 #include "camera.h"
 #include "scene.h"
@@ -16,6 +18,7 @@ void init_nuklear_gui(World* world) {
     world->ctx = (struct nk_context*)malloc(sizeof(struct nk_context));
     snk_setup(&(snk_desc_t){0});
     nk_style_hide_cursor(snk_new_frame());
+    LOG_DEBUG("Initialized nuklear GUI");
 }
 
 void draw_nuklear_gui(World* world) {
