@@ -91,10 +91,15 @@ def generate_podcast_script(topic):
             **conversation,
             "timestamp": datetime.now().isoformat()
         }, f, indent=2)
+    try:
+        with open("../engine_pipe", "w") as pipe:
+            pipe.write(script_file + "\n")
+    except:
+        print("Failed to write to engine pipe")
     
     return script_file
 
 if __name__ == "__main__":
-    topic = "what might a complete, unstoppable, greatest of all time, NBA center look like? what traits from the greats would this player have? what race might the player be, if you had to guess?"
+    topic = "how can we verify if the colors that one human sees are the exact same colors that another human sees? dn might see the color blue, and kermit might see the color blue, but in dn's world blue is actually red in kermits world... interesting conversation"
     output_file = generate_podcast_script(topic)
     print(f"Generated script saved to: {output_file}")

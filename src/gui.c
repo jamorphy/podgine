@@ -83,10 +83,10 @@ void draw_nuklear_gui(World* world) {
             nk_label(nk_ctx, "<In Editor Mode>", NK_TEXT_CENTERED);
         }
 
-        nk_layout_row_static(nk_ctx, 30, 80, 1);
-        if (nk_button_label(nk_ctx, "play script")) {
-            play_script(world);
-        }
+        /* nk_layout_row_static(nk_ctx, 30, 80, 1); */
+        /* if (nk_button_label(nk_ctx, "play script")) { */
+        /*     play_script(world); */
+        /* } */
 
         nk_layout_row_static(nk_ctx, 30, 80, 1);
         if (nk_button_label(nk_ctx, "exit")) {

@@ -82,6 +82,8 @@ typedef struct {
 } Line;
 
 typedef struct {
+    int current_line;
+    char* current_speaking_character;
     Line* lines;
     int line_count;
 } Script;
@@ -110,12 +112,13 @@ typedef struct World {
     uint32_t renderable_count;
     struct nk_context* ctx;
 
-    Script* script;
+    Script* active_script;
 
     // TODO: HACKY INCOMING
     bool is_playing_audio;
-    int current_line;  // to track which line we're on
-    char* current_speaking_character;
+    char* backlog[100];
+    int backlog_i;
+    int backlog_size;
     // TODO: END HACKY
 
     bool quit;
