@@ -1,0 +1,108 @@
+{
+	"scene_name":	"scenes/default.json",
+	"scene_version":	"1.0",
+	"entities":	[{
+			"id":	1,
+			"components":	{
+				"transform":	{
+					"position":	[5, 5, 20],
+					"scale":	[1, 1, 1]
+				}
+			}
+		}, {
+			"id":	2,
+			"components":	{
+				"transform":	{
+					"position":	[5, 5, 20],
+					"scale":	[25, 25, 25]
+				},
+				"renderable":	{
+					"mesh_type":	"sprite",
+					"material_type":	"textured",
+					"texture_path":	"assets/buu2.jpeg"
+				},
+				"character":	{
+					"id":	0,
+					"character_id":	"P(‰Õ.Ü",
+					"display_name":	"p(‰Õ.Ü"
+				}
+			}
+		}, {
+			"id":	3,
+			"components":	{
+				"transform":	{
+					"position":	[30, 0, 30],
+					"scale":	[1, 1, 1]
+				}
+			}
+		}, {
+			"id":	4,
+			"components":	{
+				"transform":	{
+					"position":	[30, 0, 30],
+					"scale":	[25, 25, 25]
+				},
+				"renderable":	{
+					"mesh_type":	"sprite",
+					"material_type":	"textured",
+					"texture_path":	"assets/kermit.jpg"
+				},
+				"character":	{
+					"id":	0,
+					"character_id":	"\u0003ı\u0001",
+					"display_name":	""
+				}
+			}
+		}, {
+			"id":	5,
+			"components":	{
+				"transform":	{
+					"position":	[-30, 0, -30],
+					"scale":	[1, 1, 1]
+				}
+			}
+		}, {
+			"id":	6,
+			"components":	{
+				"transform":	{
+					"position":	[-30, 0, -30],
+					"scale":	[25, 25, 25]
+				},
+				"renderable":	{
+					"mesh_type":	"sprite",
+					"material_type":	"textured",
+					"texture_path":	"assets/farm.jpg"
+				},
+				"character":	{
+					"id":	0,
+					"character_id":	"",
+					"display_name":	""
+				}
+			}
+		}],
+	"cameras":	[{
+			"id":	1,
+			"name":	"",
+			"position":	[4.9600000381469727, 16, 3.0199999809265137],
+			"pitch":	-25.25,
+			"yaw":	-362.14999389648438
+		}, {
+			"id":	2,
+			"name":	"",
+			"position":	[30, 4, 46.119998931884766],
+			"pitch":	-9.5,
+			"yaw":	-180
+		}, {
+			"id":	3,
+			"name":	"",
+			"position":	[-30, 4, -48],
+			"pitch":	-6.1399998664855957,
+			"yaw":	-360
+		}, {
+			"id":	4,
+			"name":	"Camera 4",
+			"position":	[-39.6599998474121, 0.5, -46.970001220703125],
+			"pitch":	-4.8000001907348633,
+			"yaw":	-341.07000732421875
+		}]
+}

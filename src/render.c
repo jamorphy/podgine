@@ -154,7 +154,7 @@ void render_cameras(World* world, mat4x4 view, mat4x4 proj)
         mat4x4_mul(mvp_matrix, proj, view);
         mat4x4_mul(mvp_matrix, mvp_matrix, model_matrix);
 
-        Renderable* camera_renderable = &world->camera_visualization_renderable;
+        Renderable* camera_renderable = &world->camera_renderable;
         
         sg_apply_pipeline(camera_renderable->material->pipeline);
         sg_apply_bindings(&camera_renderable->mesh->bindings);

@@ -7,8 +7,10 @@
 #include "ecs.h"
 #include "constants.h"
 #include "camera.h"
+#include "character.h"
 
-void clear_scene(World* world) {
+void clear_scene(World* world)
+{
     Camera editor_camera = world->cameras[0];
 
     for (uint32_t i = 0; i < world->renderable_count; i++) {
@@ -39,15 +41,15 @@ void clear_scene(World* world) {
     while (world->entity_count > 0) {
         uint32_t current_index = world->entity_count - 1;
         Entity* entity_to_destroy = &world->entities[current_index];
-        
+
         destroy_entity(world, entity_to_destroy);
     }
-    
+
     world->next_entity_id = 1;
-    
+
     world->camera_count = 1;
     world->next_camera_id = 1;
-    
+
     // Explicitly reset non-editor cameras
     for (int i = 1; i < MAX_CAMERAS; i++) {
         Camera* cam = &world->cameras[i];
@@ -59,316 +61,228 @@ void clear_scene(World* world) {
         cam->yaw = 0;
         memset(cam->name, 0, sizeof(cam->name));
     }
-    
+
     // Restore editor camera
     world->cameras[0] = editor_camera;
     world->active_camera = editor_camera;
 }
 
 bool load_scene(World* world, const char* filename) {
-    char filepath[256];
-    snprintf(filepath, sizeof(filepath), "scenes/%s", filename);
-    
-    FILE* file = fopen(filepath, "rb");
-    if (!file) {
-        LOG_WARN("Failed to open scene file: %s", filepath);
+    // Read file
+    FILE* f = fopen(filename, "r");
+    if (!f) {
+        printf("Failed to open scene file: %s\n", filename);
         return false;
     }
-    
-    // Get file size
-    fseek(file, 0, SEEK_END);
-    long file_size_long = ftell(file);
-    if (file_size_long < 0) {
-        LOG_WARN("Error getting scene file size");
-        fclose(file);
-        return false;
-    }
-    size_t file_size = (size_t)file_size_long;
-    fseek(file, 0, SEEK_SET);
-    
-    // Allocate buffer and read file
-    char* json_buffer = (char*)malloc(file_size + 1);
-    if (!json_buffer) {
-        LOG_WARN("Failed to allocate memory for scene file");
-        fclose(file);
-        return false;
-    }
-    
-    size_t read_size = fread(json_buffer, 1, file_size, file);
-    fclose(file);
-    
-    if (read_size != file_size) {
-        LOG_WARN("Failed to read scene file");
-        free(json_buffer);
-        return false;
-    }
-    
-    json_buffer[file_size] = '\0';  // Null terminate the string
-    
+
+    // Get file size and read it into a string
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    char* json_string = malloc(fsize + 1);
+    fread(json_string, fsize, 1, f);
+    fclose(f);
+    json_string[fsize] = 0;
+
     // Parse JSON
-    cJSON* root = cJSON_Parse(json_buffer);
-    free(json_buffer);  // We can free this now as cJSON has its own copy
-    
+    cJSON* root = cJSON_Parse(json_string);
+    free(json_string);
     if (!root) {
-        const char* error_ptr = cJSON_GetErrorPtr();
-        if (error_ptr) {
-            LOG_WARN("JSON Parse Error before: %s", error_ptr);
-        }
+        printf("Failed to parse scene JSON\n");
         return false;
     }
-    
-    // Version check
-    cJSON* version = cJSON_GetObjectItem(root, "scene_version");
-    if (!version || !cJSON_IsNumber(version) || version->valueint != 1) {
-        LOG_WARN("Invalid or unsupported scene version");
-        cJSON_Delete(root);
-        return false;
-    }
-    
-    // Clear existing scene
+
     clear_scene(world);
-    
+
     cJSON* entities = cJSON_GetObjectItem(root, "entities");
-    if (!entities || !cJSON_IsArray(entities)) {
-        LOG_WARN("Scene file missing entities array or invalid format");
-        cJSON_Delete(root);
-        return false;
-    }
+    if (entities) {
+        cJSON* entity;
+        cJSON_ArrayForEach(entity, entities) {
+            cJSON* components = cJSON_GetObjectItem(entity, "components");
+            if (!components) continue;
 
-    int entity_count = cJSON_GetArraySize(entities);
-    for (int i = 0; i < entity_count; i++) {
-        cJSON* entity_json = cJSON_GetArrayItem(entities, i);
-        cJSON* components = cJSON_GetObjectItem(entity_json, "components");
-        if (!components) continue;
+            Entity* new_entity = create_entity(world);
+            if (!new_entity) continue;
 
-        // Get transform data
-        cJSON* transform = cJSON_GetObjectItem(components, "transform");
-        if (!transform) continue;
-
-        // Parse position
-        vec3 position = {0, 0, 0};
-        cJSON* pos_array = cJSON_GetObjectItem(transform, "position");
-        if (pos_array && cJSON_IsArray(pos_array)) {
-            position[0] = (float)cJSON_GetArrayItem(pos_array, 0)->valuedouble;
-            position[1] = (float)cJSON_GetArrayItem(pos_array, 1)->valuedouble;
-            position[2] = (float)cJSON_GetArrayItem(pos_array, 2)->valuedouble;
-        }
-
-        // Parse scale
-        vec3 scale = {1, 1, 1};
-        cJSON* scale_array = cJSON_GetObjectItem(transform, "scale");
-        if (scale_array && cJSON_IsArray(scale_array)) {
-            scale[0] = (float)cJSON_GetArrayItem(scale_array, 0)->valuedouble;
-            scale[1] = (float)cJSON_GetArrayItem(scale_array, 1)->valuedouble;
-            scale[2] = (float)cJSON_GetArrayItem(scale_array, 2)->valuedouble;
-        }
-
-        // Get mesh type
-        cJSON* mesh = cJSON_GetObjectItem(components, "mesh");
-        if (!mesh) continue;
-
-        cJSON* mesh_type = cJSON_GetObjectItem(mesh, "type");
-        if (!mesh_type || !cJSON_IsString(mesh_type)) continue;
-
-        Entity* entity = NULL;
-        if (strcmp(mesh_type->valuestring, "cube") == 0) {
-            entity = create_cube(world, position, scale);
-        }
-        else if (strcmp(mesh_type->valuestring, "image") == 0) {
-            // For images, we need to get the image path
-            cJSON* image_path = cJSON_GetObjectItem(mesh, "image_path");
-            if (!image_path || !cJSON_IsString(image_path)) {
-                LOG_WARN("Image entity missing image_path");
-                continue;
+            vec3 pos;
+            cJSON* transform = cJSON_GetObjectItem(components, "transform");
+            if (transform) {
+                cJSON *position = cJSON_GetObjectItem(transform, "position");
+                if (position) {
+                    pos[0] = cJSON_GetArrayItem(position, 0)->valuedouble;
+                    pos[1] = cJSON_GetArrayItem(position, 1)->valuedouble;
+                    pos[2] = cJSON_GetArrayItem(position, 2)->valuedouble;
+                    entity_set_transform_xyz(new_entity, pos);
+                }
             }
-            entity = create_img(world, image_path->valuestring, position, scale);
-        }
 
-        if (!entity) {
-            LOG_WARN("Failed to create entity of type: %s", mesh_type->valuestring);
-            cJSON_Delete(root);
-            return false;
+            char* texture_path;
+            cJSON* renderable = cJSON_GetObjectItem(components, "renderable");
+            if (renderable) {
+                /* const char* mesh_type = cJSON_GetObjectItem(renderable, "mesh_type")->valuestring; */
+                /* const char* material_type = cJSON_GetObjectItem(renderable, "material_type")->valuestring; */
+                texture_path = cJSON_GetObjectItem(renderable, "texture_path")->valuestring;
+
+                /* if (strcmp(mesh_type, "sprite") == 0) { */
+                /* } else if (strcmp(mesh_type, "cube") == 0) { */
+                /*     // Here you would call your cube creation functions */
+                /*     // Example: create_cube_entity(world, ...); */
+                /* } */
+            }
+
+            cJSON* character = cJSON_GetObjectItem(components, "character");
+            if (character) {
+                const char* character_id = cJSON_GetObjectItem(character, "character_id")->valuestring;
+                const char* display_name = cJSON_GetObjectItem(character, "display_name")->valuestring;
+                create_character_pos(world, texture_path, character_id, display_name, pos);
+            }
         }
     }
 
     cJSON* cameras = cJSON_GetObjectItem(root, "cameras");
-    if (!cameras || !cJSON_IsArray(cameras)) {
-        LOG_WARN("Scene file missing cameras array or invalid format");
+    if (cameras) {
+        cJSON* camera;
+        cJSON_ArrayForEach(camera, cameras) {
+            // TODO: do i need ID
+            /* int camera_id = cJSON_GetObjectItem(camera, "id")->valueint; */
+            /* const char* camera_name = cJSON_GetObjectItem(camera, "name")->valuestring; */
+
+            // Get camera position
+            cJSON* position = cJSON_GetObjectItem(camera, "position");
+            vec3 camera_pos;
+            camera_pos[0] = cJSON_GetArrayItem(position, 0)->valuedouble;
+            camera_pos[1] = cJSON_GetArrayItem(position, 1)->valuedouble;
+            camera_pos[2] = cJSON_GetArrayItem(position, 2)->valuedouble;
+            float pitch = cJSON_GetObjectItem(camera, "pitch")->valuedouble;
+            float yaw = cJSON_GetObjectItem(camera, "yaw")->valuedouble;
+
+            create_camera(world, camera_pos[0], camera_pos[1], camera_pos[2],
+                          pitch, yaw);
+        }
+    }
+
+    cJSON_Delete(root);
+    return true;
+}
+
+bool save_scene(World* world, const char* filename)
+{
+    cJSON* root = cJSON_CreateObject();
+    if (!root) {
+        printf("Failed to create JSON object\n");
+        return false;
+    }
+
+    // Add basic scene info
+    cJSON_AddStringToObject(root, "scene_name", filename);
+    cJSON_AddStringToObject(root, "scene_version", "1.0");
+
+    // Create entities array
+    cJSON* entities = cJSON_CreateArray();
+    if (!entities) {
+        printf("Failed to create entities array\n");
         cJSON_Delete(root);
         return false;
     }
 
-    int camera_count = cJSON_GetArraySize(cameras);
-    for (int i = 0; i < camera_count; i++) {
-        cJSON* camera = cJSON_GetArrayItem(cameras, i);
-        
-        // Get camera name
-        cJSON* name = cJSON_GetObjectItem(camera, "name");
-        if (!name || !cJSON_IsString(name)) continue;
-        
-        // Get position
-        cJSON* pos_array = cJSON_GetObjectItem(camera, "position");
-        float x = 0, y = 0, z = 0;
-        if (pos_array && cJSON_IsArray(pos_array)) {
-            x = (float)cJSON_GetArrayItem(pos_array, 0)->valuedouble;
-            y = (float)cJSON_GetArrayItem(pos_array, 1)->valuedouble;
-            z = (float)cJSON_GetArrayItem(pos_array, 2)->valuedouble;
+    // Save each entity
+    for (uint32_t i = 0; i < world->entity_count; i++) {
+        Entity* entity = &world->entities[i];
+        cJSON* json_entity = cJSON_CreateObject();
+        cJSON_AddNumberToObject(json_entity, "id", entity->id);
+
+        // Components object
+        cJSON* components = cJSON_CreateObject();
+
+        // Transform component
+        cJSON* transform = cJSON_CreateObject();
+
+        cJSON* position = cJSON_CreateArray();
+        cJSON_AddItemToArray(position, cJSON_CreateNumber(entity->transform.position[0]));
+        cJSON_AddItemToArray(position, cJSON_CreateNumber(entity->transform.position[1]));
+        cJSON_AddItemToArray(position, cJSON_CreateNumber(entity->transform.position[2]));
+        cJSON_AddItemToObject(transform, "position", position);
+
+        // Add rotation and scale
+        //cJSON* rotation = cJSON_CreateArray();
+        cJSON* scale = cJSON_CreateArray();
+        cJSON_AddItemToArray(scale, cJSON_CreateNumber(entity->transform.scale[0]));
+        cJSON_AddItemToArray(scale, cJSON_CreateNumber(entity->transform.scale[1]));
+        cJSON_AddItemToArray(scale, cJSON_CreateNumber(entity->transform.scale[2]));
+        cJSON_AddItemToObject(transform, "scale", scale);
+
+        // Fill rotation and scale arrays...
+
+        cJSON_AddItemToObject(components, "transform", transform);
+
+        // Only add renderable if it exists
+        if (entity->renderable) {
+            cJSON* renderable = cJSON_CreateObject();
+            cJSON_AddStringToObject(renderable, "mesh_type", "sprite");  // For now
+            cJSON_AddStringToObject(renderable, "material_type", "textured");
+            if (entity->renderable->asset_path) {
+                cJSON_AddStringToObject(renderable, "texture_path", entity->renderable->asset_path);
+            }
+            cJSON_AddItemToObject(components, "renderable", renderable);
         }
-        
-        // Get orientation
-        float pitch = 0, yaw = 0;
-        cJSON* pitch_json = cJSON_GetObjectItem(camera, "pitch");
-        cJSON* yaw_json = cJSON_GetObjectItem(camera, "yaw");
-        
-        if (pitch_json && cJSON_IsNumber(pitch_json)) {
-            pitch = (float)pitch_json->valuedouble;
+
+        if (entity->character) {
+            cJSON* character = cJSON_CreateObject();
+            cJSON_AddNumberToObject(character, "id", entity->character->id);
+            cJSON_AddStringToObject(character, "character_id", strdup(entity->character->character_id));
+            cJSON_AddStringToObject(character, "display_name", strdup(entity->character->display_name));
+            if (entity->character->cam) {
+                cJSON_AddNumberToObject(character, "camera_id", entity->character->cam->id);
+            }
+            cJSON_AddItemToObject(components, "character", character);
         }
-        if (yaw_json && cJSON_IsNumber(yaw_json)) {
-            yaw = (float)yaw_json->valuedouble;
-        }
-        
-        // Create the camera
-        create_and_add_camera(world, x, y, z, pitch, yaw, name->valuestring);
+
+        cJSON_AddItemToObject(json_entity, "components", components);
+        cJSON_AddItemToArray(entities, json_entity);
     }
-    
-    
-    // Cleanup
+
+    cJSON_AddItemToObject(root, "entities", entities);
+
+    cJSON* cameras = cJSON_CreateArray();
+    if (!cameras) {
+        printf("Failed to create cameras array\n");
+        cJSON_Delete(root);
+        return false;
+    }
+
+    // Add cameras (skip index 0 as it's the editor camera)
+    for (int i = 1; i < world->camera_count; i++) {
+        Camera* cam = &world->cameras[i];
+        cJSON* camera = cJSON_CreateObject();
+
+        cJSON_AddNumberToObject(camera, "id", cam->id);
+        cJSON_AddStringToObject(camera, "name", cam->name);
+
+        // Add position as array
+        cJSON* position = cJSON_CreateArray();
+        cJSON_AddItemToArray(position, cJSON_CreateNumber((float)((int)(cam->position[0] * 100)) / 100));
+        cJSON_AddItemToArray(position, cJSON_CreateNumber((float)((int)(cam->position[1] * 100)) / 100));
+        cJSON_AddItemToArray(position, cJSON_CreateNumber((float)((int)(cam->position[2] * 100)) / 100));
+        cJSON_AddItemToObject(camera, "position", position);
+        cJSON_AddItemToObject(camera, "pitch", cJSON_CreateNumber((float)((int)(cam->pitch * 100)) / 100));
+        cJSON_AddItemToObject(camera, "yaw", cJSON_CreateNumber((float)((int)(cam->yaw * 100)) / 100));
+
+
+        cJSON_AddItemToArray(cameras, camera);
+    }
+
+    cJSON_AddItemToObject(root, "cameras", cameras);
+
+    // Write to file
+    char* json_string = cJSON_Print(root);
+    FILE* f = fopen(filename, "w");
+    if (f) {
+        fputs(json_string, f);
+        fclose(f);
+    }
+
+    free(json_string);
     cJSON_Delete(root);
-    
+
     return true;
 }
-
-/* bool save_scene(World* world, const char* filename) { */
-/*     // Create root JSON object */
-/*     cJSON* root = cJSON_CreateObject(); */
-/*     if (!root) { */
-/*         fprintf(stderr, "Failed to create JSON object\n"); */
-/*         return false; */
-/*     } */
-
-/*     // Add scene version */
-/*     cJSON_AddNumberToObject(root, "scene_version", 1); */
-
-/*     // Create entities array */
-/*     cJSON* entities = cJSON_AddArrayToObject(root, "entities"); */
-/*     if (!entities) { */
-/*         fprintf(stderr, "Failed to create entities array\n"); */
-/*         cJSON_Delete(root); */
-/*         return false; */
-/*     } */
-
-/*     // Add each entity */
-/*     for (uint32_t i = 0; i < world->entity_count; i++) { */
-/*         Entity* entity = &world->entities[i]; */
-/*         Renderable* renderable = &world->renderables[i]; */
-
-/*         cJSON* entity_obj = cJSON_CreateObject(); */
-/*         cJSON_AddNumberToObject(entity_obj, "id", entity->id); */
-
-/*         // Create components object */
-/*         cJSON* components = cJSON_CreateObject(); */
-
-/*         // Add transform component */
-/*         cJSON* transform = cJSON_CreateObject(); */
-/*         cJSON* position = cJSON_CreateArray(); */
-/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(entity->transform.position[0])); */
-/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(entity->transform.position[1])); */
-/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(entity->transform.position[2])); */
-/*         cJSON_AddItemToObject(transform, "position", position); */
-
-/*         cJSON* rotation = cJSON_CreateArray(); */
-/*         cJSON_AddItemToArray(rotation, cJSON_CreateNumber(0.0)); // Currently not storing rotation */
-/*         cJSON_AddItemToArray(rotation, cJSON_CreateNumber(0.0)); */
-/*         cJSON_AddItemToArray(rotation, cJSON_CreateNumber(0.0)); */
-/*         cJSON_AddItemToObject(transform, "rotation", rotation); */
-
-/*         cJSON* scale = cJSON_CreateArray(); */
-/*         cJSON_AddItemToArray(scale, cJSON_CreateNumber(entity->transform.scale[0])); */
-/*         cJSON_AddItemToArray(scale, cJSON_CreateNumber(entity->transform.scale[1])); */
-/*         cJSON_AddItemToArray(scale, cJSON_CreateNumber(entity->transform.scale[2])); */
-/*         cJSON_AddItemToObject(transform, "scale", scale); */
-
-/*         cJSON_AddItemToObject(components, "transform", transform); */
-
-/*         // Add mesh component */
-/*         cJSON* mesh = cJSON_CreateObject(); */
-/*         if (renderable->mesh && renderable->mesh->type == MESH_IMAGE) { */
-/*             cJSON_AddStringToObject(mesh, "type", "image"); */
-/*             cJSON_AddStringToObject(mesh, "image_path", renderable->mesh->image_path); */
-/*         } else { */
-/*             cJSON_AddStringToObject(mesh, "type", "cube"); */
-/*         } */
-/*         cJSON_AddItemToObject(components, "mesh", mesh); */
-
-/*         // Add material component */
-/*         cJSON* material = cJSON_CreateObject(); */
-/*         cJSON_AddStringToObject(material, "type", "basic"); */
-/*         cJSON_AddItemToObject(components, "material", material); */
-
-/*         cJSON_AddItemToObject(entity_obj, "components", components); */
-/*         cJSON_AddItemToArray(entities, entity_obj); */
-/*     } */
-
-/*     // Create cameras array */
-/*     cJSON* cameras = cJSON_AddArrayToObject(root, "cameras"); */
-/*     if (!cameras) { */
-/*         fprintf(stderr, "Failed to create cameras array\n"); */
-/*         cJSON_Delete(root); */
-/*         return false; */
-/*     } */
-
-/*     // Add each camera */
-/*     for (int i = 0; i < world->camera_count; i++) { */
-/*         Camera* cam = &world->cameras[i]; */
-/*         cJSON* camera = cJSON_CreateObject(); */
-
-/*         cJSON_AddNumberToObject(camera, "id", cam->id); */
-/*         cJSON_AddStringToObject(camera, "name", cam->name); */
-
-/*         cJSON* position = cJSON_CreateArray(); */
-/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(cam->position[0])); */
-/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(cam->position[1])); */
-/*         cJSON_AddItemToArray(position, cJSON_CreateNumber(cam->position[2])); */
-/*         cJSON_AddItemToObject(camera, "position", position); */
-
-/*         cJSON_AddNumberToObject(camera, "pitch", cam->pitch); */
-/*         cJSON_AddNumberToObject(camera, "yaw", cam->yaw); */
-        
-/*         if (i == 0) { */
-/*             cJSON_AddBoolToObject(camera, "is_editor", true); */
-/*         } */
-
-/*         cJSON_AddItemToArray(cameras, camera); */
-/*     } */
-
-/*     // Convert to string */
-/*     char* json_string = cJSON_Print(root); */
-/*     if (!json_string) { */
-/*         fprintf(stderr, "Failed to convert JSON to string\n"); */
-/*         cJSON_Delete(root); */
-/*         return false; */
-/*     } */
-
-/*     // Build full path */
-/*     char filepath[256]; */
-/*     snprintf(filepath, sizeof(filepath), "scenes/%s", filename); */
-
-/*     // Open file for writing */
-/*     FILE* file = fopen(filepath, "w"); */
-/*     if (!file) { */
-/*         fprintf(stderr, "Failed to open file for writing: %s\n", filepath); */
-/*         free(json_string); */
-/*         cJSON_Delete(root); */
-/*         return false; */
-/*     } */
-
-/*     // Write to file */
-/*     fputs(json_string, file); */
-/*     fclose(file); */
-
-/*     // Cleanup */
-/*     free(json_string); */
-/*     cJSON_Delete(root); */
-
-/*     return true; */
-/* } */

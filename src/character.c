@@ -40,6 +40,7 @@ Entity* create_character(World* world,
     entity_set_transform_scale(entity, (vec3){20.0f, 10.0f, 20.0f});
 
     Renderable* renderable = &world->renderables[world->renderable_count++];
+    renderable->asset_path = strdup(image_path);
     entity->renderable = renderable;
 
     sg_image texture = create_image_texture(image_path);
@@ -61,7 +62,7 @@ Entity* create_character_pos(World* world,
     Character* character = (Character*)malloc(sizeof(Character));
     character->character_id = character_id;
     character->display_name = display_name;
-    character->cam = create_camera(world, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f);
+    character->cam = NULL;
     entity->character = character;
 
     if (world->renderable_count >= 1000) {
@@ -73,6 +74,7 @@ Entity* create_character_pos(World* world,
     entity_set_transform_scale(entity, (vec3){25.0f, 25.0f, 25.0f});
 
     Renderable* renderable = &world->renderables[world->renderable_count++];
+    renderable->asset_path = strdup(image_path);
     entity->renderable = renderable;
 
     sg_image texture = create_image_texture(image_path);
@@ -105,6 +107,7 @@ Entity* create_character_poscam(World* world,
     entity_set_transform_scale(entity, (vec3){25.0f, 25.0f, 25.0f});
 
     Renderable* renderable = &world->renderables[world->renderable_count++];
+    renderable->asset_path = strdup(image_path);
     entity->renderable = renderable;
 
     sg_image texture = create_image_texture(image_path);

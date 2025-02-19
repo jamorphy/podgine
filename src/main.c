@@ -39,7 +39,7 @@ void init(void)
         });
 
     init_logging();
-    
+
     memset(&world, 0, sizeof(World));
     world.in_edit_mode = true;
     world.show_grid = 0;
@@ -49,22 +49,22 @@ void init(void)
     init_script_pipe();
     init_nuklear_gui(&world);
     render_init();
-    // TODO: this create_ api is terrible
-    create_and_set_grid(&world.grid_renderable);    
+
+    create_and_set_grid(&world.grid_renderable);
+    // EDITOR CAMERA
     create_and_add_camera(&world, 82.76f, 75.0f, -106.12f, -30.0f, -395.0f, "default camera");
-    create_character_poscam(&world, "assets/buu2.jpeg", "jaja", "majin buu", (vec3) { 5.0f, 5.0f, 20.0f }, (vec3) { 4.96f, 16.0f, 3.02f }, (vec2){-25.25f, -362.15f});
-    create_character_poscam(&world, "assets/kermit.jpg", "kermit", "Kermit the frog", (vec3) { 30.0f, 0.0f, 30.0f }, (vec3) { 30.0f, 4.0f, 46.12f }, (vec2) { -9.50f, -180.0f});
-    create_character_poscam(&world, "assets/farm.jpg", "dn", "DEEZ NUTS GUY", (vec3) { -30.0f, 0.0f, -30.0f }, (vec3) { -30.0f, 4.0f, -48.0f }, (vec2) { -6.14f, -360.0f});
+
+    load_scene(&world, "scenes/default.json");
     init_camera_renderable(&world);
     world.active_camera = world.cameras[EDITOR_CAMERA_INDEX];
 
-    add_script(&world.script_queue, "api/generated/podcast_1739857608/script.json");
+    //add_script(&world.script_queue, "api/generated/podcast_1739857608/script.json");
 
     world.active_script = malloc(sizeof(Script));
-    char* first_script = get_next_script(&world.script_queue);
-    load_script(&world, first_script);
-    free(first_script);
-    world.is_script_active = true;
+    //char* first_script = get_next_script(&world.script_queue);
+    //load_script(&world, first_script);
+    //free(first_script);
+    world.is_script_active = false;
 }
 
 void input(const sapp_event* ev)
@@ -119,7 +119,7 @@ void input(const sapp_event* ev)
             // Increase sensitivity for more noticeable movement
             world.active_camera.yaw += -delta_x * 0.5f;
             world.active_camera.pitch += -delta_y * 0.5f;
-                
+
             world.active_camera.pitch = clamp(world.active_camera.pitch, -89.0f, 89.0f);
 
             world.control.last_mouse_x = ev->mouse_x;
@@ -141,7 +141,7 @@ void frame(void)
         cleanup();
         exit(1);
     }
-    
+
     const float w = sapp_widthf();
     const float h = sapp_heightf();
 
@@ -172,13 +172,13 @@ void frame(void)
     render_cameras(&world, world.active_camera.view, proj);
     draw_nuklear_gui(&world);
 
-    if (world.is_script_active) {
-        play_next_line(&world);
-    } else {
-        char* next_script = get_next_script(&world.script_queue);
-        load_script(&world, next_script);
-        free(next_script);
-    }
+    /* if (world.is_script_active) { */
+    /*     play_next_line(&world); */
+    /* } else { */
+    /*     char* next_script = get_next_script(&world.script_queue); */
+    /*     load_script(&world, next_script); */
+    /*     free(next_script); */
+    /* } */
 
     sdtx_draw();
     sg_end_pass();
@@ -186,7 +186,7 @@ void frame(void)
 }
 
 void cleanup(void)
-{    
+{
     destroy_grid(&world.grid_renderable);
     audio_shutdown();
     clear_scene(&world);

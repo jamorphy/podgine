@@ -151,6 +151,6 @@ void init_camera_renderable(World* world)
     }
 
     // Set up mesh and material
-    world->camera_visualization_renderable.mesh = create_quad_mesh(texture);
-    world->camera_visualization_renderable.material = create_textured_material();
+    world->camera_renderable.mesh = create_quad_mesh(texture);
+    world->camera_renderable.material = create_textured_material();
 }

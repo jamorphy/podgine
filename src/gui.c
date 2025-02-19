@@ -64,11 +64,16 @@ void draw_nuklear_gui(World* world) {
             if (nk_button_label(nk_ctx, "clear scene")) {
                 clear_scene(world);                
             }
-            if (nk_button_label(nk_ctx, "load default scene")) {
-                load_scene(world, "vertical.json");
+            if (nk_button_label(nk_ctx, "load scene")) {
+                load_scene(world, "scenes/default.json");
             }
             nk_layout_row_dynamic(nk_ctx, 20, 1);
             nk_label(nk_ctx, "<In Editor Mode>", NK_TEXT_CENTERED);
+        }
+
+        nk_layout_row_static(nk_ctx, 30, 80, 1);
+        if (nk_button_label(nk_ctx, "save scene")) {
+            save_scene(world, "scenes/default.json");
         }
 
         nk_layout_row_static(nk_ctx, 30, 80, 1);

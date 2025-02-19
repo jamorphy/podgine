@@ -27,6 +27,7 @@ typedef struct Material {
 typedef struct {
     Mesh *mesh;
     Material *material;
+    char* asset_path;
 } Renderable;
 
 typedef struct Transform {
@@ -44,7 +45,6 @@ typedef struct {
     vec3 up;
     mat4x4 view;
     mat4x4 proj;
-    //float distance;
     float pitch;
     float yaw;
     vec3 forward;
@@ -112,19 +112,17 @@ typedef struct World {
     bool in_edit_mode;
     nk_bool show_grid;
 
-    Renderable camera_visualization_renderable;
+    Renderable camera_renderable;
     Renderable grid_renderable;
 
     Renderable renderables[MAX_RENDERABLES];
     uint32_t renderable_count;
-    struct nk_context* ctx;
 
     Script* active_script;
     bool is_script_active;
     bool is_playing_audio;
     ScriptQueue script_queue;
-    int backlog_i;
-    int backlog_size;
 
+    struct nk_context* ctx; // GUI
     bool quit;
 } World;
