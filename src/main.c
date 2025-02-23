@@ -21,6 +21,7 @@
 #include "gui.h"
 #include "render.h"
 #include "character.h"
+#include "ml.h"
 #include "scene.h"
 #include "audio.h"
 #include "script.h"
@@ -52,12 +53,25 @@ void init(void)
 
     create_and_set_grid(&world.grid_renderable);
     init_camera_renderable(&world);
+
+    /* float* initial_heightmap = generate_new_heightmap("model_weights.bin"); */
+    /* if (!initial_heightmap) { */
+    /*     printf("Failed to initialize terrain.\n"); */
+    /*     return; */
+    /* } */
+
+    float* initial_heightmap = load_heightmap_from_npy("heightmap_61377.npy");
+    if (!initial_heightmap) {
+        printf("initial heightmap is null\n");
+    }
+    create_and_set_terrain(&world.terrain_renderable, initial_heightmap);
+    free(initial_heightmap);
     
     // EDITOR CAMERA
     create_and_add_camera(&world, 82.76f, 75.0f, -106.12f, -30.0f, -395.0f, "default camera");
     world.active_camera = world.cameras[EDITOR_CAMERA_INDEX];
 
-    load_scene(&world, "scenes/default.json");
+    load_scene(&world, "scenes/empty.json");
 
     //add_script(&world.script_queue, "api/generated/podcast_1739857608/script.json");
 
@@ -169,6 +183,10 @@ void frame(void)
     if (world.show_grid) {
         render_grid(&world, world.active_camera.view, proj);
     }
+
+    render_terrain(&world, world.active_camera.view, proj);
+
+    
     render_entities(&world, world.active_camera.view, proj);
     render_cameras(&world, world.active_camera.view, proj);
     draw_nuklear_gui(&world);

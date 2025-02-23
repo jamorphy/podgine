@@ -6,6 +6,7 @@
 #include "log.h"
 #include "ecs.h"
 #include "utils.h"
+#include "ml.h"
 
 // entity_set_transform_xyz
 void entity_set_transform_xyz(Entity* entity, vec3 xyz)
@@ -53,7 +54,6 @@ void create_and_set_grid(Renderable* renderable)
     Material* material = (Material*)malloc(sizeof(Material));
 
     // Create the grid mesh
-    const int GRID_SIZE = 1000;
     const float GRID_SPACE = 10.0f;
     const int LINES_PER_DIR = (GRID_SIZE * 2 + 1);
     const int VERTS_PER_LINE = 2;
@@ -517,4 +517,123 @@ Mesh create_camera_mesh(void)
     mesh.bindings.index_buffer = mesh.index_buffer;
 
     return mesh;
+}
+
+void create_and_set_terrain(Renderable* renderable, float* heightmap) {
+    if (!heightmap) {
+        printf("Error: Null heightmap provided to create_and_set_terrain.\n");
+        return;
+    }
+
+    Mesh* mesh = (Mesh*)malloc(sizeof(Mesh));
+    Material* material = (Material*)malloc(sizeof(Material));
+    if (!mesh || !material) {
+        printf("Error: Memory allocation failed for mesh or material.\n");
+        free(mesh);
+        free(material);
+        return;
+    }
+
+    const int VERTEX_COUNT = GRID_SIZE * GRID_SIZE;
+
+    // Allocate vertex data
+    float* vertices = (float*)malloc(VERTEX_COUNT * 6 * sizeof(float));
+    if (!vertices) {
+        printf("Error: Memory allocation failed for vertices.\n");
+        free(mesh);
+        free(material);
+        return;
+    }
+    int vertex_idx = 0;
+    for (int z = 0; z < GRID_SIZE; z++) {
+        for (int x = 0; x < GRID_SIZE; x++) {
+            float height = heightmap[z * GRID_SIZE + x];
+            vertices[vertex_idx++] = (float)x;
+            vertices[vertex_idx++] = height;
+            vertices[vertex_idx++] = (float)z;
+            float normalized_height = (height + 5.0f) / 10.0f;
+            vertices[vertex_idx++] = normalized_height;
+            vertices[vertex_idx++] = 1.0f - normalized_height;
+            vertices[vertex_idx++] = 0.2f;
+        }
+    }
+
+    // Create dynamic vertex buffer (no initial data)
+    mesh->vertex_buffer = sg_make_buffer(&(sg_buffer_desc){
+        .size = VERTEX_COUNT * 6 * sizeof(float),
+        .usage = SG_USAGE_STREAM,  // Allow updates
+        .label = "terrain-vertices"
+    });
+    mesh->vertex_count = VERTEX_COUNT;
+
+    // Update buffer with initial data
+    sg_update_buffer(mesh->vertex_buffer, &(sg_range){
+        .ptr = vertices,
+        .size = VERTEX_COUNT * 6 * sizeof(float)
+    });
+
+    // Index buffer (static, no need to update)
+    const int INDEX_COUNT = (GRID_SIZE - 1) * (GRID_SIZE - 1) * 6;
+    unsigned int* indices = (unsigned int*)malloc(INDEX_COUNT * sizeof(unsigned int));
+    int index_idx = 0;
+    for (int z = 0; z < GRID_SIZE - 1; z++) {
+        for (int x = 0; x < GRID_SIZE - 1; x++) {
+            int top_left = z * GRID_SIZE + x;
+            int top_right = top_left + 1;
+            int bot_left = (z + 1) * GRID_SIZE + x;
+            int bot_right = bot_left + 1;
+            indices[index_idx++] = top_left;
+            indices[index_idx++] = bot_left;
+            indices[index_idx++] = top_right;
+            indices[index_idx++] = top_right;
+            indices[index_idx++] = bot_left;
+            indices[index_idx++] = bot_right;
+        }
+    }
+
+    mesh->index_buffer = sg_make_buffer(&(sg_buffer_desc){
+        .type = SG_BUFFERTYPE_INDEXBUFFER,
+        .data = (sg_range) { .ptr = indices, .size = INDEX_COUNT * sizeof(unsigned int) },
+        .label = "terrain-indices"
+    });
+    mesh->index_count = INDEX_COUNT;
+
+    free(vertices);
+    free(indices);
+
+    // Material setup (unchanged)
+    char* vs_source = read_text_file("src/shaders/terrain_vs.metal");
+    char* fs_source = read_text_file("src/shaders/terrain_fs.metal");
+
+    material->shader = sg_make_shader(&(sg_shader_desc){
+        .uniform_blocks[0] = {
+            .stage = SG_SHADERSTAGE_VERTEX,
+            .size = sizeof(vs_params_t),
+            .msl_buffer_n = 0,
+        },
+        .vertex_func = { .source = vs_source },
+        .fragment_func = { .source = fs_source },
+        .label = "terrain-shader"
+    });
+
+    material->pipeline = sg_make_pipeline(&(sg_pipeline_desc){
+        .shader = material->shader,
+        .layout = {
+            .attrs = {
+                [0] = { .format = SG_VERTEXFORMAT_FLOAT3 },
+                [1] = { .format = SG_VERTEXFORMAT_FLOAT3 }
+            }
+        },
+        .index_type = SG_INDEXTYPE_UINT32,
+        .primitive_type = SG_PRIMITIVETYPE_TRIANGLES,
+        .depth = {
+            .write_enabled = true,
+            .compare = SG_COMPAREFUNC_LESS_EQUAL
+        },
+        .label = "terrain-pipeline"
+    });
+
+    renderable->mesh = mesh;
+    renderable->material = material;
+    printf("Terrain created and set successfully.\n");
 }

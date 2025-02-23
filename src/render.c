@@ -201,3 +201,25 @@ void render_entities(World* world, mat4x4 view, mat4x4 proj)
     }
 }
 
+void render_terrain(World* world, mat4x4 view, mat4x4 proj) {
+    mat4x4 model_matrix;
+    mat4x4_identity(model_matrix);
+
+    mat4x4 mvp_matrix;
+    mat4x4_mul(mvp_matrix, proj, view);
+    mat4x4_mul(mvp_matrix, mvp_matrix, model_matrix);
+
+    sg_apply_pipeline(world->terrain_renderable.material->pipeline);
+
+    sg_bindings bindings = {
+        .vertex_buffers[0] = world->terrain_renderable.mesh->vertex_buffer,
+        .index_buffer = world->terrain_renderable.mesh->index_buffer
+    };
+    sg_apply_bindings(&bindings);
+
+    vs_params_t vs_params;
+    memcpy(vs_params.mvp, mvp_matrix, sizeof(mvp_matrix));
+    sg_apply_uniforms(0, &SG_RANGE(vs_params));
+
+    sg_draw(0, world->terrain_renderable.mesh->index_count, 1);
+}

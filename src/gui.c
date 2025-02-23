@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "log.h"
+#include "ml.h"
 #include "gui.h"
 #include "camera.h"
 #include "scene.h"
@@ -74,6 +75,11 @@ void draw_nuklear_gui(World* world) {
         nk_layout_row_static(nk_ctx, 30, 80, 1);
         if (nk_button_label(nk_ctx, "save scene")) {
             save_scene(world, "scenes/default.json");
+        }
+
+        nk_layout_row_static(nk_ctx, 30, 80, 1);
+        if (nk_button_label(nk_ctx, "new terrain")) {
+            update_terrain_heightmap(&world->terrain_renderable, "model_weights.bin");
         }
 
         nk_layout_row_static(nk_ctx, 30, 80, 1);

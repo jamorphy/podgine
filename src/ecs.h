@@ -11,6 +11,8 @@ void destroy_entity(World* world, Entity* entity);
 void destroy_mesh(Mesh* mesh);
 void destroy_material(Material* material);
 
+void create_and_set_terrain(Renderable* renderable, float* heightmap);
+
 void create_and_set_grid(Renderable *renderable);
 void destroy_grid(Renderable *renderable);
 

@@ -114,6 +114,7 @@ typedef struct World {
 
     Renderable camera_renderable;
     Renderable grid_renderable;
+    Renderable terrain_renderable;
 
     Renderable renderables[MAX_RENDERABLES];
     uint32_t renderable_count;

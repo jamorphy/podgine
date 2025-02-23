@@ -1,0 +1,12 @@
+{
+	"scene_name":	"scenes/empty.json",
+	"scene_version":	"1.0",
+	"entities":	[],
+	"cameras":	[{
+			"id":	1,
+			"name":	"",
+			"position":	[4.9600000381469727, 16, 3.0199999809265137],
+			"pitch":	-25.25,
+			"yaw":	-362.14999389648438
+		}]
+}
