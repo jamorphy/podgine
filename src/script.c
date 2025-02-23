@@ -143,11 +143,13 @@ void play_next_line(World* world) {
             if (world->active_script->current_speaking_character) {
                 free(world->active_script->current_speaking_character);
             }
+
             world->active_script->current_speaking_character = strdup(current_character);
         }
     }
 
     if (world->is_playing_audio) {
+
         render_text(1.0f, 55.0f, world->active_script->lines[world->active_script->current_line].text);
 
         if (!audio_is_playing()) {
@@ -155,7 +157,8 @@ void play_next_line(World* world) {
             world->active_script->current_line++;
 
             // Check if script is finished
-            if (world->active_script->current_line >= world->active_script->line_count) {
+            if (world->is_script_active &&
+                world->active_script->current_line >= world->active_script->line_count) {
                 LOG_DEBUG("Script finished");
                 world->is_script_active = false;
                 free(world->active_script);

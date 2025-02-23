@@ -51,12 +51,13 @@ void init(void)
     render_init();
 
     create_and_set_grid(&world.grid_renderable);
+    init_camera_renderable(&world);
+    
     // EDITOR CAMERA
     create_and_add_camera(&world, 82.76f, 75.0f, -106.12f, -30.0f, -395.0f, "default camera");
+    world.active_camera = world.cameras[EDITOR_CAMERA_INDEX];
 
     load_scene(&world, "scenes/default.json");
-    init_camera_renderable(&world);
-    world.active_camera = world.cameras[EDITOR_CAMERA_INDEX];
 
     //add_script(&world.script_queue, "api/generated/podcast_1739857608/script.json");
 
@@ -172,13 +173,13 @@ void frame(void)
     render_cameras(&world, world.active_camera.view, proj);
     draw_nuklear_gui(&world);
 
-    /* if (world.is_script_active) { */
-    /*     play_next_line(&world); */
-    /* } else { */
-    /*     char* next_script = get_next_script(&world.script_queue); */
-    /*     load_script(&world, next_script); */
-    /*     free(next_script); */
-    /* } */
+    if (world.is_script_active) {
+        play_next_line(&world);
+    } else if (world.script_queue.size > 0) {
+        char* next_script = get_next_script(&world.script_queue);
+        load_script(&world, next_script);
+        free(next_script);
+    }
 
     sdtx_draw();
     sg_end_pass();

@@ -60,9 +60,9 @@ Entity* create_character_pos(World* world,
     if (!entity) return NULL;
 
     Character* character = (Character*)malloc(sizeof(Character));
-    character->character_id = character_id;
-    character->display_name = display_name;
-    character->cam = NULL;
+    character->character_id = strdup(character_id);
+    character->display_name = strdup(display_name);
+    character->cam = create_camera(world, 5.0, 5.0, 5.0, 5.0, 5.0);
     entity->character = character;
 
     if (world->renderable_count >= 1000) {

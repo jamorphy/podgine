@@ -23,8 +23,8 @@
 				},
 				"character":	{
 					"id":	0,
-					"character_id":	"P(äÍ.†",
-					"display_name":	"p(äÍ.†"
+					"character_id":	"jaja",
+					"display_name":	"jaja2001"
 				}
 			}
 		}, {
@@ -49,8 +49,8 @@
 				},
 				"character":	{
 					"id":	0,
-					"character_id":	"\u0003õ\u0001",
-					"display_name":	""
+					"character_id":	"kermit",
+					"display_name":	"Kermit the Frog"
 				}
 			}
 		}, {
@@ -75,8 +75,8 @@
 				},
 				"character":	{
 					"id":	0,
-					"character_id":	"",
-					"display_name":	""
+					"character_id":	"dn",
+					"display_name":	"dn guy"
 				}
 			}
 		}],

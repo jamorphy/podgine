@@ -132,7 +132,7 @@ void switch_to_character_camera(World *world, const char* character_id)
 {
     Character* character = get_character(world, character_id);
     if (character == NULL) {
-        LOG_WARN("Failed to get character with id: %s", character->character_id);
+        LOG_FATAL("Failed to get character with id: %s", character_id);
     }
     world->active_camera.position[0] = character->cam->position[0];
     world->active_camera.position[1] = character->cam->position[1];
