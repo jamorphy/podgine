@@ -21,7 +21,8 @@
 #include "gui.h"
 #include "render.h"
 #include "character.h"
-#include "ml.h"
+//#include "ml.h"
+#include "generate_heightmap.h"
 #include "scene.h"
 #include "audio.h"
 #include "script.h"
@@ -54,13 +55,7 @@ void init(void)
     create_and_set_grid(&world.grid_renderable);
     init_camera_renderable(&world);
 
-    /* float* initial_heightmap = generate_new_heightmap("model_weights.bin"); */
-    /* if (!initial_heightmap) { */
-    /*     printf("Failed to initialize terrain.\n"); */
-    /*     return; */
-    /* } */
-
-    float* initial_heightmap = load_heightmap_from_npy("heightmap_61377.npy");
+    float* initial_heightmap = generate_heightmap();
     if (!initial_heightmap) {
         printf("initial heightmap is null\n");
     }

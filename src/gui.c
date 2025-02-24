@@ -78,11 +78,6 @@ void draw_nuklear_gui(World* world) {
         }
 
         nk_layout_row_static(nk_ctx, 30, 80, 1);
-        if (nk_button_label(nk_ctx, "new terrain")) {
-            update_terrain_heightmap(&world->terrain_renderable, "model_weights.bin");
-        }
-
-        nk_layout_row_static(nk_ctx, 30, 80, 1);
         if (nk_button_label(nk_ctx, "exit")) {
             world->quit = true;
         }
